@@ -60,3 +60,9 @@ ShiftPay — сучасний веб-додаток для обліку робо
 - **Адміністратор (Admin)**: Журнал робочих змін, внесення змін працівників, коригування та підтвердження заявок (модерація).
 - **Власник бізнесу (Owner)**: Управління закладами (`+ Додати заклад`), пошук закладів, перегляд аналітики, швидке перемикання між ролями.
 - **Режим Figma Canvas**: Можливість у будь-який момент перемкнути перегляд на вихідний дизайн артбордів Figma через кнопку `📐 Figma Canvas` у правому нижньому куті.
+
+---
+
+ShiftPay — A lightweight React-based shift tracking &amp; payroll management web application for small hospitality venues (cafes, bars). Features role-based salary isolation (RBAC), employee self-reporting, and two-way payment confirmation via bank receipts.
+
+https://www.figma.com/make/Ryf0I7MP32AdBDehOHwy09/ShiftPay-Login-Screen-Design?t=FzsQdptaLTl1t2vD-1
