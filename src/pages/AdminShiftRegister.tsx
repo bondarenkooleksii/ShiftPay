@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Sidebar from '../components/Sidebar';
+import styles from './AdminShiftRegister.module.css';
 
 export interface ShiftRecord {
   id: string;
@@ -129,27 +131,19 @@ export default function AdminShiftRegister({
   const pendingCount = shifts.filter((s) => s.status === 'Очікує перевірки').length;
 
   const workspaceContent = (
-    <div className="w-full flex-1 h-full flex flex-col min-w-0 overflow-hidden bg-[#F0F7FF]">
-      <header className="h-[68px] px-6 bg-[#FFFFFF] border-b border-[#E2E8F0] flex items-center justify-between shrink-0 z-10">
-        <div className="flex items-center gap-3">
-          <h1 className="text-[18px] sm:text-[19px] font-bold text-[#0F172A] leading-tight">
-            Журнал робочих змін
-          </h1>
-          <div className="ml-1 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[12px] font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.headerTitle}>Журнал робочих змін</h1>
+          <div className={styles.venueBadge}>
+            <span className={styles.pulseDot} />
             <span>Coffee Corner • Центр</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3.5">
-          <div className="hidden sm:flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-1.5 rounded-xl text-[13px] font-medium text-[#0F172A]">
-            <svg
-              className="w-4 h-4 text-[#0284C7]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
+        <div className={styles.headerRight}>
+          <div className={styles.datePill}>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -161,67 +155,57 @@ export default function AdminShiftRegister({
 
           <button
             type="button"
-            className="relative p-2 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer"
+            className={styles.iconButton}
             title="Сповіщення"
+            aria-label="Сповіщення"
           >
-            <svg
-              className="w-4.5 h-4.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-            >
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
               />
             </svg>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0284C7] rounded-full ring-2 ring-white" />
+            <span className={styles.badgeNotification} />
           </button>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[12px] font-semibold shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className={styles.activeShiftPill}>
+            <span className={styles.pulseDot} />
             <span>Зміна активна • 3 на зміні</span>
           </div>
         </div>
       </header>
 
-      <main className="w-full flex-1 p-5 sm:p-6 overflow-y-auto flex flex-col xl:flex-row gap-5 min-w-0">
-        <section className="w-full xl:w-[380px] shrink-0 flex flex-col gap-4">
-          <div
-            className="bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-5 flex flex-col justify-between"
-            style={{ boxShadow: '0 10px 25px -10px rgba(2, 132, 199, 0.08)' }}
-          >
-            <div className="border-b border-[#F1F5F9] pb-3.5 mb-4">
-              <h2 className="text-[17px] font-bold text-[#0F172A]">Внести відпрацьовану зміну</h2>
-              <p className="text-[13px] text-[#64748B] mt-0.5">
-                Зафіксуйте явку та години персоналу
-              </p>
+      <main className={styles.mainLayout}>
+        <section className={styles.formSidebar}>
+          <div className={styles.formCard}>
+            <div className={styles.formCardHeader}>
+              <h2 className={styles.formTitle}>Внести відпрацьовану зміну</h2>
+              <p className={styles.formSubtitle}>Зафіксуйте явку та години персоналу</p>
             </div>
 
-            <form onSubmit={handleSubmitNewShift} className="flex flex-col gap-3.5">
-              <div>
-                <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                  Дата <span className="text-rose-500">*</span>
+            <form onSubmit={handleSubmitNewShift} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Дата <span className={styles.requiredAsterisk}>*</span>
                 </label>
                 <input
                   type="date"
                   required
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] focus:outline-none transition-all"
+                  className={styles.input}
                 />
               </div>
 
-              <div>
-                <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                  Працівник <span className="text-rose-500">*</span>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Працівник <span className={styles.requiredAsterisk}>*</span>
                 </label>
                 <select
                   value={worker}
                   onChange={(e) => setWorker(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] focus:outline-none transition-all cursor-pointer"
+                  className={styles.select}
                 >
                   <option value="Бондаренко Олексій (Бариста)">Бондаренко Олексій (Бариста)</option>
                   <option value="Шевченко Лілія (Бариста)">Шевченко Лілія (Бариста)</option>
@@ -232,39 +216,33 @@ export default function AdminShiftRegister({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                    Початок
-                  </label>
+              <div className={styles.gridTwo}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Початок</label>
                   <input
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] focus:outline-none transition-all font-mono"
+                    className={`${styles.input} ${styles.timeInput}`}
                   />
                 </div>
-                <div>
-                  <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                    Кінець
-                  </label>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Кінець</label>
                   <input
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] focus:outline-none transition-all font-mono"
+                    className={`${styles.input} ${styles.timeInput}`}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                  Перерва
-                </label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Перерва</label>
                 <select
                   value={breakOption}
                   onChange={(e) => setBreakOption(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] focus:outline-none transition-all cursor-pointer"
+                  className={styles.select}
                 >
                   <option value="0 хв (без перерви)">0 хв (без перерви)</option>
                   <option value="30 хв (обід)">30 хв (обід)</option>
@@ -273,63 +251,40 @@ export default function AdminShiftRegister({
                 </select>
               </div>
 
-              <div className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-4.5 h-4.5 text-[#0284C7]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
+              <div className={styles.totalHoursBox}>
+                <div className={styles.totalHoursLeft}>
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span className="text-[12.5px] text-[#0369A1] font-semibold">
-                    Всього зараховано:
-                  </span>
+                  <span>Всього зараховано:</span>
                 </div>
-                <span className="text-[15px] font-bold text-[#0284C7]">
-                  {calculateTotalHours()} год
-                </span>
+                <span className={styles.totalHoursValue}>{calculateTotalHours()} год</span>
               </div>
 
-              <div>
-                <label className="text-[12.5px] font-medium text-[#475569] block mb-1">
-                  Коментар / Коригування
-                </label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Коментар / Коригування</label>
                 <input
                   type="text"
                   placeholder="наприклад, вийшов на заміну / прибирання"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] hover:border-slate-300 focus:bg-white focus:border-[#0284C7] rounded-xl px-3 py-2 text-[13.5px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none transition-all"
+                  className={styles.input}
                 />
               </div>
 
               {showSavedToast && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[12.5px] font-medium flex items-center gap-2 animate-in fade-in">
-                  <span className="w-4 h-4 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold">
-                    ✓
-                  </span>
+                <div className={styles.savedToast}>
+                  <span className={styles.toastCheck}>✓</span>
                   <span>Зміну успішно збережено в журнал!</span>
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="w-full h-11 mt-1 bg-[#0284C7] hover:bg-[#0369a1] active:bg-[#075985] text-white font-semibold text-[14px] rounded-xl shadow-sm shadow-sky-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <svg
-                  className="w-4.5 h-4.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
+              <button type="submit" className={styles.saveShiftButton}>
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 <span>Зберегти зміну в журнал</span>
@@ -338,21 +293,12 @@ export default function AdminShiftRegister({
           </div>
         </section>
 
-        <section className="flex-1 flex flex-col gap-4 min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div
-              className="bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-4 flex items-center justify-between"
-              style={{ boxShadow: '0 10px 25px -10px rgba(2, 132, 199, 0.08)' }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center font-bold shrink-0">
-                  <svg
-                    className="w-5.5 h-5.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
+        <section className={styles.contentRight}>
+          <div className={styles.statsRow}>
+            <div className={styles.statCard}>
+              <div className={styles.statLeft}>
+                <div className={styles.statIconPrimary} aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -360,33 +306,18 @@ export default function AdminShiftRegister({
                     />
                   </svg>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[12.5px] font-medium text-[#64748B] block truncate">
-                    Співробітників сьогодні
-                  </span>
-                  <span className="text-[24px] font-extrabold text-[#0F172A] tracking-tight">
-                    3
-                  </span>
+                <div>
+                  <span className={styles.statLabel}>Співробітників сьогодні</span>
+                  <span className={styles.statValue}>3</span>
                 </div>
               </div>
-              <span className="px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200 shrink-0">
-                Активні явочні
-              </span>
+              <span className={styles.statBadgeSuccess}>Активні явочні</span>
             </div>
 
-            <div
-              className="bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-4 flex items-center justify-between"
-              style={{ boxShadow: '0 10px 25px -10px rgba(2, 132, 199, 0.08)' }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-sky-50 text-[#0284C7] flex items-center justify-center font-bold shrink-0">
-                  <svg
-                    className="w-5.5 h-5.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
+            <div className={styles.statCard}>
+              <div className={styles.statLeft}>
+                <div className={styles.statIconPrimary} aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -394,45 +325,32 @@ export default function AdminShiftRegister({
                     />
                   </svg>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[12.5px] font-medium text-[#64748B] block truncate">
-                    Зараховано годин сьогодні
-                  </span>
-                  <span className="text-[24px] font-extrabold text-[#0F172A] tracking-tight">
-                    27.5 год
-                  </span>
+                <div>
+                  <span className={styles.statLabel}>Зараховано годин сьогодні</span>
+                  <span className={styles.statValue}>27.5 год</span>
                 </div>
               </div>
-              <span className="px-2.5 py-1 text-[11px] font-semibold text-[#0284C7] bg-[#E0F2FE] rounded-full border border-sky-200 shrink-0">
-                Сумарний час
-              </span>
+              <span className={styles.statBadgeSky}>Сумарний час</span>
             </div>
           </div>
 
-          <div
-            className="bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-5 flex flex-col gap-4 flex-1 min-w-0"
-            style={{ boxShadow: '0 10px 25px -10px rgba(2, 132, 199, 0.08)' }}
-          >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#F1F5F9] pb-3.5">
+          <div className={styles.tableSection}>
+            <div className={styles.tableHeaderRow}>
               <div>
-                <h3 className="text-[17px] font-bold text-[#0F172A]">Журнал змін за сьогодні</h3>
-                <p className="text-[12.5px] text-[#64748B] mt-0.5">
+                <h3 className={styles.tableSectionTitle}>Журнал змін за сьогодні</h3>
+                <p className={styles.tableSectionSubtitle}>
                   Операційний контроль відпрацьованого часу персоналу
                 </p>
               </div>
 
-              <div className="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-xl shrink-0">
+              <div className={styles.filterGroup}>
                 <button
                   type="button"
                   onClick={() => {
                     setFilterTab('all');
                     onNavigate?.('register');
                   }}
-                  className={`px-3 py-1.5 text-[12.5px] font-medium rounded-lg transition-all cursor-pointer ${
-                    filterTab === 'all'
-                      ? 'bg-white text-[#0284C7] font-semibold shadow-xs'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
-                  }`}
+                  className={`${styles.filterBtn} ${filterTab === 'all' ? styles.filterBtnActive : ''}`}
                 >
                   Всі ({shifts.length})
                 </button>
@@ -442,84 +360,64 @@ export default function AdminShiftRegister({
                     setFilterTab('pending');
                     onNavigate?.('adjustments');
                   }}
-                  className={`px-3 py-1.5 text-[12.5px] font-medium rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    filterTab === 'pending'
-                      ? 'bg-white text-[#0284C7] font-semibold shadow-xs'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
-                  }`}
+                  className={`${styles.filterBtn} ${filterTab === 'pending' ? styles.filterBtnActive : ''}`}
                 >
                   <span>Потребують підтвердження</span>
-                  <span className="w-4.5 h-4.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold flex items-center justify-center">
-                    {pendingCount}
-                  </span>
+                  <span className={styles.pendingBadgeCount}>{pendingCount}</span>
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-[#F1F5F9]">
-              <table className="w-full text-left border-collapse min-w-[650px]">
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
                 <thead>
-                  <tr className="bg-[#F8FAFC] text-[11.5px] font-semibold text-[#64748B] uppercase tracking-wider border-b border-[#E2E8F0]">
-                    <th className="py-3 px-4">Працівник</th>
-                    <th className="py-3 px-4">Інтервал</th>
-                    <th className="py-3 px-4">Перерва</th>
-                    <th className="py-3 px-4">Години</th>
-                    <th className="py-3 px-4">Примітка</th>
-                    <th className="py-3 px-4 text-right">Статус / Дія</th>
+                  <tr>
+                    <th>Працівник</th>
+                    <th>Інтервал</th>
+                    <th>Перерва</th>
+                    <th>Години</th>
+                    <th>Примітка</th>
+                    <th className={styles.textRight}>Статус / Дія</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F1F5F9] text-[13.5px]">
+                <tbody>
                   {filteredShifts.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50/75 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7.5 h-7.5 rounded-full bg-[#E0F2FE] text-[#0284C7] font-semibold text-[11px] flex items-center justify-center shrink-0 border border-sky-200">
-                            {row.workerName.slice(0, 2)}
-                          </div>
+                    <tr key={row.id}>
+                      <td>
+                        <div className={styles.workerCell}>
+                          <div className={styles.workerAvatar}>{row.workerName.slice(0, 2)}</div>
                           <div>
-                            <span className="font-semibold text-[#0F172A] block leading-tight">
-                              {row.workerName}
-                            </span>
-                            <span className="text-[11.5px] text-[#64748B]">{row.role}</span>
+                            <span className={styles.workerName}>{row.workerName}</span>
+                            <span className={styles.workerRole}>{row.role}</span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 font-mono text-[12.5px] text-[#334155]">
-                        {row.timeRange}
-                      </td>
-
-                      <td className="py-3 px-4 text-[#475569] text-[12.5px]">
-                        {row.breakDuration}
-                      </td>
-
-                      <td className="py-3 px-4 font-bold text-[#0F172A]">{row.hours}</td>
-
-                      <td className="py-3 px-4 text-[#475569] text-[12.5px]">
-                        <span
-                          className="inline-block px-2.5 py-0.5 bg-slate-100 rounded-md text-slate-700 text-[12px] max-w-[220px] truncate"
-                          title={row.note}
-                        >
+                      <td className={styles.timeRange}>{row.timeRange}</td>
+                      <td className={styles.breakDuration}>{row.breakDuration}</td>
+                      <td className={styles.hoursValue}>{row.hours}</td>
+                      <td>
+                        <span className={styles.noteBadge} title={row.note}>
                           {row.note}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-right">
+                      <td className={styles.textRight}>
                         {row.status === 'Підтверджено' ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className={styles.statusConfirmed}>
+                            <span className={styles.statusDotConfirmed} />
                             <span>Підтверджено</span>
                           </span>
                         ) : (
-                          <div className="inline-flex items-center gap-2 justify-end">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <div className={styles.pendingActionGroup}>
+                            <span className={styles.statusWaiting}>
+                              <span className={styles.statusDotWaiting} />
                               <span>Очікує</span>
                             </span>
                             <button
                               type="button"
                               onClick={() => handleConfirmShift(row.id)}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11.5px] font-semibold transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
+                              className={styles.confirmShiftBtn}
                             >
                               <span>✓</span>
                               <span>Підтвердити</span>
@@ -542,159 +440,30 @@ export default function AdminShiftRegister({
     return workspaceContent;
   }
 
+  const adminUser = {
+    initials: 'ДІ',
+    name: 'Денис Іванов',
+    roleLabel: 'Старший адміністратор',
+    venueLabel: 'Coffee Corner Центр',
+  };
+
   return (
     <div
       id="AdminShiftRegister"
       data-testid="admin-shift-register-frame"
-      className="w-[1920px] h-[1080px] bg-[#F0F7FF] flex overflow-hidden font-sans select-none relative text-[#0F172A] shrink-0"
+      className={styles.standaloneFrame}
     >
-      <aside className="w-[280px] h-full bg-[#FFFFFF] border-r border-[#E2E8F0] flex flex-col justify-between shrink-0 z-20">
-        <div className="p-6 flex flex-col">
-          <div className="flex items-center justify-between pb-6 border-b border-[#F1F5F9]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#0284C7] flex items-center justify-center text-white shadow-sm shadow-sky-500/25">
-                <span className="font-bold text-[15px] tracking-tight">[S/]</span>
-              </div>
-              <span className="text-[20px] font-bold tracking-tight text-[#0F172A]">ShiftPay</span>
-            </div>
-            <button
-              type="button"
-              onClick={onRoleSwitch}
-              className="px-2.5 py-1 text-[11px] font-semibold text-[#0284C7] bg-[#E0F2FE] hover:bg-sky-200/70 rounded-full border border-sky-200 cursor-pointer"
-            >
-              Адміністратор
-            </button>
-          </div>
-
-          <nav className="mt-6 flex flex-col gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                setInternalNav('register');
-                setFilterTab('all');
-              }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] transition-all text-left cursor-pointer ${
-                activeNav === 'register'
-                  ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50 font-medium'
-              }`}
-            >
-              <svg
-                className={`w-5 h-5 shrink-0 ${activeNav === 'register' ? 'text-[#0284C7]' : 'text-[#64748B]'}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>Внесення та журнал змін</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setInternalNav('adjustments');
-                setFilterTab('pending');
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[14px] transition-all text-left cursor-pointer ${
-                activeNav === 'adjustments'
-                  ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50 font-medium'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                  />
-                </svg>
-                <span>Коригування заявок</span>
-              </div>
-              {pendingCount > 0 && (
-                <span className="px-2 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">
-                  {pendingCount} pending
-                </span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setInternalNav('workers')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] transition-all text-left cursor-pointer ${
-                activeNav === 'workers'
-                  ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50 font-medium'
-              }`}
-            >
-              <svg
-                className="w-5 h-5 shrink-0 text-[#64748B]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-                />
-              </svg>
-              <span>Працівники на зміні</span>
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-[#E2E8F0] m-3 bg-[#F8FAFC] rounded-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-[#E0F2FE] text-[#0284C7] font-bold text-[14px] flex items-center justify-center shrink-0 border border-sky-200">
-              ДІ
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-semibold text-[#0F172A] truncate">
-                Денис Іванов
-              </span>
-              <span className="text-[12px] text-[#64748B] truncate">Старший адміністратор</span>
-              <span className="text-[11px] text-[#0284C7] truncate font-medium">
-                Coffee Corner Центр
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            title="Вийти з акаунту"
-            onClick={onLogout}
-            className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-white rounded-lg transition-colors ml-1 shrink-0 cursor-pointer"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-              />
-            </svg>
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        roleType="admin"
+        activeNav={activeNav}
+        onNavigate={(id) => {
+          setInternalNav(id);
+          onNavigate?.(id);
+        }}
+        onLogout={() => onLogout?.()}
+        onRoleSwitch={onRoleSwitch}
+        user={adminUser}
+      />
 
       {workspaceContent}
     </div>
