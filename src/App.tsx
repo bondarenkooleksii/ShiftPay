@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import LoginPage from './LoginPage';
 import Sidebar from './components/Sidebar';
 import ModalShift from './components/ModalShift';
@@ -6,17 +7,18 @@ import OwnerHome from './pages/OwnerHome';
 import EmployeeHome from './pages/EmployeeHome';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminShiftRegister from './pages/AdminShiftRegister';
+import NotFoundPage from './pages/NotFoundPage';
 import styles from './App.module.css';
 
 type UserRole = 'owner' | 'admin' | 'employee';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentRole, setCurrentRole] = useState<UserRole>('employee');
-  const [activeNav, setActiveNav] = useState('balance');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [viewMode, setViewMode] = useState<'app' | 'canvas'>('app');
   const [isSubmitShiftOpen, setIsSubmitShiftOpen] = useState(false);
   const [isAddVenueOpen, setIsAddVenueOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'app' | 'canvas'>('app');
 
   const [venues, setVenues] = useState<
     Array<{ id: string; name: string; type: string; address: string; staffCount: number }>
@@ -103,17 +105,84 @@ export default function App() {
     setIsAddVenueOpen(false);
   };
 
+  // Determine current active role from pathname
+  const currentRole: UserRole = location.pathname.startsWith('/owner')
+    ? 'owner'
+    : location.pathname.startsWith('/admin')
+      ? 'admin'
+      : 'employee';
+
+  // Determine active navigation item from pathname
+  const activeNav = (() => {
+    const p = location.pathname;
+    if (p.includes('/shifts')) return 'shifts';
+    if (p.includes('/team')) return 'team';
+    if (p.includes('/analytics')) return 'analytics';
+    if (p.includes('/adjustments')) return 'adjustments';
+    if (p.includes('/workers')) return 'workers';
+    if (p.includes('/archive')) return 'archive';
+    if (p.includes('/settings')) return 'settings';
+    if (p.startsWith('/owner')) return 'venues';
+    if (p.startsWith('/admin')) return 'register';
+    return 'balance';
+  })();
+
   const handleRoleCycle = () => {
     if (currentRole === 'employee') {
-      setCurrentRole('admin');
-      setActiveNav('register');
+      navigate('/admin');
     } else if (currentRole === 'admin') {
-      setCurrentRole('owner');
-      setActiveNav('venues');
+      navigate('/owner');
     } else {
-      setCurrentRole('employee');
-      setActiveNav('balance');
+      navigate('/employee');
     }
+  };
+
+  const handleNavClick = (navId: string) => {
+    if (navId === 'submit-shift') {
+      setIsSubmitShiftOpen(true);
+      return;
+    }
+    switch (navId) {
+      case 'venues':
+        navigate('/owner');
+        break;
+      case 'shifts':
+        navigate('/owner/shifts');
+        break;
+      case 'team':
+        navigate('/owner/team');
+        break;
+      case 'analytics':
+        navigate('/owner/analytics');
+        break;
+      case 'register':
+        navigate('/admin');
+        break;
+      case 'adjustments':
+        navigate('/admin/adjustments');
+        break;
+      case 'workers':
+        navigate('/admin/workers');
+        break;
+      case 'balance':
+        navigate('/employee');
+        break;
+      case 'archive':
+        navigate('/employee/archive');
+        break;
+      case 'profile-settings':
+        navigate('/employee/settings');
+        break;
+      case 'settings':
+        navigate(currentRole === 'owner' ? '/owner/settings' : '/admin/settings');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleLogout = () => {
+    navigate('/login');
   };
 
   const currentUser =
@@ -136,77 +205,6 @@ export default function App() {
             roleLabel: 'Бариста / Працівник',
             venueLabel: 'Coffee Corner Центр',
           };
-
-  if (!isAuthenticated) {
-    return (
-      <div style={{ position: 'relative', minHeight: '100vh' }}>
-        <LoginPage
-          onLoginSuccess={(selectedRole) => {
-            setCurrentRole(selectedRole);
-            setActiveNav(
-              selectedRole === 'owner'
-                ? 'venues'
-                : selectedRole === 'admin'
-                  ? 'register'
-                  : 'balance'
-            );
-            setIsAuthenticated(true);
-          }}
-        />
-
-        <div className={styles.floatingSwitcher}>
-          <button
-            onClick={() => setViewMode('app')}
-            className={`${styles.roleBtn} ${viewMode === 'app' ? styles.roleBtnActive : ''}`}
-          >
-            💻 Додаток
-          </button>
-          <button
-            onClick={() => setViewMode('canvas')}
-            className={`${styles.roleBtn} ${viewMode === 'canvas' ? styles.roleBtnActive : ''}`}
-          >
-            📐 Figma Canvas
-          </button>
-        </div>
-
-        {viewMode === 'canvas' && (
-          <div className={styles.loginCanvasOverlay}>
-            <div className={styles.canvasItem}>
-              <span className={styles.canvasFrameSize}>Frame: LoginPage (1920 × 1080)</span>
-              <div
-                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
-              >
-                <LoginPage
-                  onLoginSuccess={(r) => {
-                    setCurrentRole(r);
-                    setIsAuthenticated(true);
-                  }}
-                />
-              </div>
-            </div>
-            <div className={styles.canvasItem}>
-              <span className={styles.canvasFrameSize}>Frame: EmployeeDashboard (1920 × 1080)</span>
-              <div
-                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
-              >
-                <EmployeeDashboard />
-              </div>
-            </div>
-            <div className={styles.canvasItem}>
-              <span className={styles.canvasFrameSize}>
-                Frame: AdminShiftRegister (1920 × 1080)
-              </span>
-              <div
-                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
-              >
-                <AdminShiftRegister showSidebar={true} />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   if (viewMode === 'canvas') {
     return (
@@ -233,28 +231,19 @@ export default function App() {
               <Sidebar
                 roleType={currentRole}
                 activeNav={activeNav}
-                onNavigate={(id) => {
-                  setActiveNav(id);
-                  if (id === 'submit-shift') setIsSubmitShiftOpen(true);
-                }}
-                onLogout={() => setIsAuthenticated(false)}
+                onNavigate={handleNavClick}
+                onLogout={handleLogout}
                 onRoleSwitch={handleRoleCycle}
                 user={currentUser}
               />
               {currentRole === 'owner' ? (
                 activeNav === 'shifts' ? (
-                  <AdminShiftRegister
-                    onLogout={() => setIsAuthenticated(false)}
-                    onRoleSwitch={handleRoleCycle}
-                  />
+                  <AdminShiftRegister onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />
                 ) : (
                   <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
                 )
               ) : currentRole === 'admin' ? (
-                <AdminShiftRegister
-                  onLogout={() => setIsAuthenticated(false)}
-                  onRoleSwitch={handleRoleCycle}
-                />
+                <AdminShiftRegister onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />
               ) : (
                 <EmployeeHome
                   shifts={shifts}
@@ -272,10 +261,7 @@ export default function App() {
             <div
               style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
             >
-              <EmployeeDashboard
-                onLogout={() => setIsAuthenticated(false)}
-                onRoleSwitch={handleRoleCycle}
-              />
+              <EmployeeDashboard onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />
             </div>
           </div>
 
@@ -289,7 +275,7 @@ export default function App() {
             >
               <AdminShiftRegister
                 showSidebar={true}
-                onLogout={() => setIsAuthenticated(false)}
+                onLogout={handleLogout}
                 onRoleSwitch={handleRoleCycle}
               />
             </div>
@@ -299,72 +285,39 @@ export default function App() {
     );
   }
 
-  return (
+  // Common Layout for Authenticated Dashboard Pages
+  const DashboardLayout = () => (
     <div className={styles.appContainer}>
       <Sidebar
         roleType={currentRole}
         activeNav={activeNav}
-        onNavigate={(navId) => {
-          setActiveNav(navId);
-          if (navId === 'submit-shift') {
-            setIsSubmitShiftOpen(true);
-          }
-        }}
-        onLogout={() => setIsAuthenticated(false)}
+        onNavigate={handleNavClick}
+        onLogout={handleLogout}
         onRoleSwitch={handleRoleCycle}
         user={currentUser}
       />
 
-      <div className={styles.mainArea}>
-        {currentRole === 'owner' ? (
-          activeNav === 'shifts' ? (
-            <AdminShiftRegister
-              activeNav={activeNav}
-              onNavigate={(id) => setActiveNav(id)}
-              onLogout={() => setIsAuthenticated(false)}
-              onRoleSwitch={handleRoleCycle}
-            />
-          ) : (
-            <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
-          )
-        ) : currentRole === 'admin' ? (
-          <AdminShiftRegister
-            activeNav={activeNav}
-            onNavigate={(id) => setActiveNav(id)}
-            onLogout={() => setIsAuthenticated(false)}
-            onRoleSwitch={handleRoleCycle}
-          />
-        ) : (
-          <EmployeeHome shifts={shifts} onOpenSubmitShiftModal={() => setIsSubmitShiftOpen(true)} />
-        )}
-      </div>
+      <main className={styles.mainArea}>
+        <Outlet />
+      </main>
 
       <div className={styles.floatingSwitcher}>
         <div className={styles.roleGroup}>
           <span className={styles.roleLabel}>Роль:</span>
           <button
-            onClick={() => {
-              setCurrentRole('employee');
-              setActiveNav('balance');
-            }}
+            onClick={() => navigate('/employee')}
             className={`${styles.roleBtn} ${currentRole === 'employee' ? styles.roleBtnActive : ''}`}
           >
             Працівник
           </button>
           <button
-            onClick={() => {
-              setCurrentRole('admin');
-              setActiveNav('register');
-            }}
+            onClick={() => navigate('/admin')}
             className={`${styles.roleBtn} ${currentRole === 'admin' ? styles.roleBtnActive : ''}`}
           >
             Адмін
           </button>
           <button
-            onClick={() => {
-              setCurrentRole('owner');
-              setActiveNav('venues');
-            }}
+            onClick={() => navigate('/owner')}
             className={`${styles.roleBtn} ${currentRole === 'owner' ? styles.roleBtnActive : ''}`}
           >
             Власник
@@ -372,7 +325,7 @@ export default function App() {
         </div>
 
         <button
-          onClick={() => setViewMode(viewMode === 'app' ? 'canvas' : 'app')}
+          onClick={() => setViewMode('canvas')}
           title="Переглянути дизайн у форматі Figma Canvas (усі екрани поряд)"
           className={styles.canvasToggleBtn}
         >
@@ -470,5 +423,179 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+
+  return (
+    <Routes>
+      {/* Authentication Routes */}
+      <Route
+        path="/"
+        element={
+          <div style={{ position: 'relative', minHeight: '100vh' }}>
+            <LoginPage
+              onLoginSuccess={(role) => {
+                if (role === 'owner') navigate('/owner');
+                else if (role === 'admin') navigate('/admin');
+                else navigate('/employee');
+              }}
+            />
+            <div className={styles.floatingSwitcher}>
+              <button
+                onClick={() => setViewMode('canvas')}
+                className={styles.roleBtn}
+                title="Переглянути дизайн у форматі Figma Canvas"
+              >
+                📐 Figma Canvas
+              </button>
+            </div>
+          </div>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <div style={{ position: 'relative', minHeight: '100vh' }}>
+            <LoginPage
+              onLoginSuccess={(role) => {
+                if (role === 'owner') navigate('/owner');
+                else if (role === 'admin') navigate('/admin');
+                else navigate('/employee');
+              }}
+            />
+            <div className={styles.floatingSwitcher}>
+              <button
+                onClick={() => setViewMode('canvas')}
+                className={styles.roleBtn}
+                title="Переглянути дизайн у форматі Figma Canvas"
+              >
+                📐 Figma Canvas
+              </button>
+            </div>
+          </div>
+        }
+      />
+
+      {/* Authenticated Dashboard Nested Routes */}
+      <Route element={<DashboardLayout />}>
+        {/* Employee Routes */}
+        <Route
+          path="/employee"
+          element={
+            <EmployeeHome
+              shifts={shifts}
+              onOpenSubmitShiftModal={() => setIsSubmitShiftOpen(true)}
+            />
+          }
+        />
+        <Route
+          path="/employee/dashboard"
+          element={<EmployeeDashboard onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />}
+        />
+        <Route
+          path="/employee/archive"
+          element={
+            <EmployeeHome
+              shifts={shifts}
+              onOpenSubmitShiftModal={() => setIsSubmitShiftOpen(true)}
+            />
+          }
+        />
+        <Route
+          path="/employee/settings"
+          element={
+            <EmployeeHome
+              shifts={shifts}
+              onOpenSubmitShiftModal={() => setIsSubmitShiftOpen(true)}
+            />
+          }
+        />
+
+        {/* Administrator Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminShiftRegister
+              activeNav={activeNav}
+              onNavigate={handleNavClick}
+              onLogout={handleLogout}
+              onRoleSwitch={handleRoleCycle}
+            />
+          }
+        />
+        <Route
+          path="/admin/adjustments"
+          element={
+            <AdminShiftRegister
+              activeNav="adjustments"
+              onNavigate={handleNavClick}
+              onLogout={handleLogout}
+              onRoleSwitch={handleRoleCycle}
+            />
+          }
+        />
+        <Route
+          path="/admin/workers"
+          element={
+            <AdminShiftRegister
+              activeNav="workers"
+              onNavigate={handleNavClick}
+              onLogout={handleLogout}
+              onRoleSwitch={handleRoleCycle}
+            />
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminShiftRegister
+              activeNav="settings"
+              onNavigate={handleNavClick}
+              onLogout={handleLogout}
+              onRoleSwitch={handleRoleCycle}
+            />
+          }
+        />
+
+        {/* Owner Routes */}
+        <Route
+          path="/owner"
+          element={
+            <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
+          }
+        />
+        <Route
+          path="/owner/shifts"
+          element={
+            <AdminShiftRegister
+              activeNav="shifts"
+              onNavigate={handleNavClick}
+              onLogout={handleLogout}
+              onRoleSwitch={handleRoleCycle}
+            />
+          }
+        />
+        <Route
+          path="/owner/team"
+          element={
+            <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
+          }
+        />
+        <Route
+          path="/owner/analytics"
+          element={
+            <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
+          }
+        />
+        <Route
+          path="/owner/settings"
+          element={
+            <OwnerHome venues={venues} onOpenAddVenueModal={() => setIsAddVenueOpen(true)} />
+          }
+        />
+      </Route>
+
+      {/* 404 Route */}
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }

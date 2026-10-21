@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './LoginPage.module.css';
 
 interface LoginPageProps {
@@ -6,6 +7,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+  const navigate = useNavigate();
   const [role, setRole] = useState<'employee' | 'owner' | 'admin'>('employee');
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       setIsSubmitting(false);
       if (onLoginSuccess) {
         onLoginSuccess(role);
+      }
+      if (role === 'owner') {
+        navigate('/owner');
+      } else if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/employee');
       }
     }, 400);
   };
