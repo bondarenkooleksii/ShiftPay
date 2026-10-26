@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import CustomDatePicker from './CustomDatePicker';
+import CustomSelect from './CustomSelect';
 import styles from './ModalShift.module.css';
 
 interface ModalShiftProps {
@@ -24,7 +26,9 @@ export default function ModalShift({ isOpen, onClose, onSubmitShift }: ModalShif
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const h = parseFloat(hours) || 8;
-    const formattedDate = shiftDate.split('-').reverse().join('.');
+    const formattedDate = shiftDate.includes('-')
+      ? shiftDate.split('-').reverse().join('.')
+      : shiftDate;
     onSubmitShift({
       date: formattedDate,
       type: shiftType,
@@ -67,37 +71,34 @@ export default function ModalShift({ isOpen, onClose, onSubmitShift }: ModalShif
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Дата зміни</label>
-            <input
-              type="date"
-              required
-              value={shiftDate}
-              onChange={(e) => setShiftDate(e.target.value)}
-              className={styles.input}
-            />
+            <CustomDatePicker value={shiftDate} onChange={setShiftDate} />
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Тип зміни та графік</label>
-            <select
+            <CustomSelect
               value={shiftType}
-              onChange={(e) => {
-                setShiftType(e.target.value);
-                if (e.target.value.includes('11.5')) setHours('11.5');
-                else if (e.target.value.includes('8.0')) setHours('8.0');
-                else if (e.target.value.includes('6.0')) setHours('6.0');
+              onChange={(val) => {
+                setShiftType(val);
+                if (val.includes('11.5')) setHours('11.5');
+                else if (val.includes('8.0')) setHours('8.0');
+                else if (val.includes('6.0')) setHours('6.0');
               }}
-              className={styles.select}
-            >
-              <option value="Денна зміна (08:00 - 20:00, перерва 30 хв)">
-                Денна зміна (08:00 - 20:00, перерва 30 хв) — 11.5 год
-              </option>
-              <option value="Ранкова зміна (08:00 - 16:00, без перерви)">
-                Ранкова зміна (08:00 - 16:00, без перерви) — 8.0 год
-              </option>
-              <option value="Вечірня зміна (16:00 - 22:00, без перерви)">
-                Вечірня зміна (16:00 - 22:00, без перерви) — 6.0 год
-              </option>
-            </select>
+              options={[
+                {
+                  value: 'Денна зміна (08:00 - 20:00, перерва 30 хв)',
+                  label: 'Денна зміна (08:00 - 20:00, перерва 30 хв) — 11.5 год',
+                },
+                {
+                  value: 'Ранкова зміна (08:00 - 16:00, без перерви)',
+                  label: 'Ранкова зміна (08:00 - 16:00, без перерви) — 8.0 год',
+                },
+                {
+                  value: 'Вечірня зміна (16:00 - 22:00, без перерви)',
+                  label: 'Вечірня зміна (16:00 - 22:00, без перерви) — 6.0 год',
+                },
+              ]}
+            />
           </div>
 
           <div className={styles.gridTwo}>

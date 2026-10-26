@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation, Outlet } from 'react-router-do
 import LoginPage from './LoginPage';
 import Sidebar from './components/Sidebar';
 import ModalShift from './components/ModalShift';
+import CustomSelect from './components/CustomSelect';
 import OwnerHome from './pages/OwnerHome';
 import EmployeeHome from './pages/EmployeeHome';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -388,18 +389,18 @@ export default function App() {
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Тип закладу</label>
-                <select
+                <CustomSelect
                   value={newVenueType}
-                  onChange={(e) => setNewVenueType(e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="Кав’ярня">Кав’ярня</option>
-                  <option value="Ресторан">Ресторан</option>
-                  <option value="Бар / Паб">Бар / Паб</option>
-                  <option value="Пекарня">Пекарня</option>
-                  <option value="Салон краси / Барбершоп">Салон краси / Барбершоп</option>
-                  <option value="Магазин / Роздріб">Магазин / Роздріб</option>
-                </select>
+                  onChange={setNewVenueType}
+                  options={[
+                    'Кав’ярня',
+                    'Ресторан',
+                    'Бар / Паб',
+                    'Пекарня',
+                    'Салон краси / Барбершоп',
+                    'Магазин / Роздріб',
+                  ]}
+                />
               </div>
 
               <div className={styles.formGroup}>

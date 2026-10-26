@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import CustomDatePicker from '../components/CustomDatePicker';
+import CustomSelect from '../components/CustomSelect';
+import NotificationsPopover from '../components/NotificationsPopover';
 import styles from './AdminShiftRegister.module.css';
 
 export interface ShiftRecord {
@@ -153,21 +156,7 @@ export default function AdminShiftRegister({
             <span>24 вересня 2026, Четвер</span>
           </div>
 
-          <button
-            type="button"
-            className={styles.iconButton}
-            title="Сповіщення"
-            aria-label="Сповіщення"
-          >
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-              />
-            </svg>
-            <span className={styles.badgeNotification} />
-          </button>
+          <NotificationsPopover />
 
           <div className={styles.activeShiftPill}>
             <span className={styles.pulseDot} />
@@ -189,31 +178,23 @@ export default function AdminShiftRegister({
                 <label className={styles.formLabel}>
                   Дата <span className={styles.requiredAsterisk}>*</span>
                 </label>
-                <input
-                  type="date"
-                  required
-                  value={formDate}
-                  onChange={(e) => setFormDate(e.target.value)}
-                  className={styles.input}
-                />
+                <CustomDatePicker value={formDate} onChange={setFormDate} />
               </div>
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>
                   Працівник <span className={styles.requiredAsterisk}>*</span>
                 </label>
-                <select
+                <CustomSelect
                   value={worker}
-                  onChange={(e) => setWorker(e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="Бондаренко Олексій (Бариста)">Бондаренко Олексій (Бариста)</option>
-                  <option value="Шевченко Лілія (Бариста)">Шевченко Лілія (Бариста)</option>
-                  <option value="Коваленко Дмитро (Помічник бариста)">
-                    Коваленко Дмитро (Помічник бариста)
-                  </option>
-                  <option value="Мельник Анна (Касир)">Мельник Анна (Касир)</option>
-                </select>
+                  onChange={setWorker}
+                  options={[
+                    'Бондаренко Олексій (Бариста)',
+                    'Шевченко Лілія (Бариста)',
+                    'Коваленко Дмитро (Помічник бариста)',
+                    'Мельник Анна (Касир)',
+                  ]}
+                />
               </div>
 
               <div className={styles.gridTwo}>
@@ -239,16 +220,16 @@ export default function AdminShiftRegister({
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Перерва</label>
-                <select
+                <CustomSelect
                   value={breakOption}
-                  onChange={(e) => setBreakOption(e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="0 хв (без перерви)">0 хв (без перерви)</option>
-                  <option value="30 хв (обід)">30 хв (обід)</option>
-                  <option value="45 хв (обід + кава)">45 хв (обід + кава)</option>
-                  <option value="60 хв (1 год перерва)">60 хв (1 год перерва)</option>
-                </select>
+                  onChange={setBreakOption}
+                  options={[
+                    '0 хв (без перерви)',
+                    '30 хв (обід)',
+                    '45 хв (обід + кава)',
+                    '60 хв (1 год перерва)',
+                  ]}
+                />
               </div>
 
               <div className={styles.totalHoursBox}>
