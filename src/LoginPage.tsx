@@ -73,7 +73,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               onClick={() => setRole('admin')}
               className={`${styles.tab} ${role === 'admin' ? styles.tabActive : ''}`}
             >
-              <span>Адмін</span>
+              <span>Адміністратор</span>
             </button>
 
             <button

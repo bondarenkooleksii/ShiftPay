@@ -224,7 +224,14 @@ export default function App() {
         <div className={styles.canvasScroll}>
           <div className={styles.canvasItem}>
             <div className={styles.canvasFrameLabel}>
-              <span>Активний екран: {currentRole}</span>
+              <span>
+                Активний екран:{' '}
+                {currentRole === 'owner'
+                  ? 'Власник'
+                  : currentRole === 'admin'
+                    ? 'Адміністратор'
+                    : 'Працівник'}
+              </span>
               <span className={styles.canvasFrameSize}>Робочий вигляд</span>
             </div>
             <div className={styles.canvasFrame}>
@@ -255,7 +262,7 @@ export default function App() {
 
           <div className={styles.canvasItem}>
             <div className={styles.canvasFrameLabel}>
-              <span>Frame: EmployeeDashboard</span>
+              <span>Артборд: Панель працівника (EmployeeDashboard)</span>
               <span className={styles.canvasFrameSize}>1920 × 1080 px</span>
             </div>
             <div
@@ -267,7 +274,7 @@ export default function App() {
 
           <div className={styles.canvasItem}>
             <div className={styles.canvasFrameLabel}>
-              <span>Frame: AdminShiftRegister</span>
+              <span>Артборд: Реєстр змін адміністратора (AdminShiftRegister)</span>
               <span className={styles.canvasFrameSize}>1920 × 1080 px</span>
             </div>
             <div
@@ -314,7 +321,7 @@ export default function App() {
             onClick={() => navigate('/admin')}
             className={`${styles.roleBtn} ${currentRole === 'admin' ? styles.roleBtnActive : ''}`}
           >
-            Адмін
+            Адміністратор
           </button>
           <button
             onClick={() => navigate('/owner')}

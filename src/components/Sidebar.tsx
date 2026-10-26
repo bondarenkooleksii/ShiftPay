@@ -220,7 +220,7 @@ export default function Sidebar({
                     </svg>
                     <span>Коригування заявок</span>
                   </div>
-                  <span className={styles.badgePending}>1 pending</span>
+                  <span className={styles.badgePending}>1 на розгляді</span>
                 </div>
               </button>
 

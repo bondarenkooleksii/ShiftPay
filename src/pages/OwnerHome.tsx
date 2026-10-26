@@ -185,7 +185,14 @@ export default function OwnerHome({ venues, onOpenAddVenueModal }: OwnerHomeProp
                     <div className={styles.venueStats}>
                       <div>
                         <span className={styles.statLabel}>Персонал:</span>
-                        <span className={styles.statValue}>{venue.staffCount} працівник</span>
+                        <span className={styles.statValue}>
+                          {venue.staffCount}{' '}
+                          {venue.staffCount === 1
+                            ? 'працівник'
+                            : venue.staffCount < 5
+                              ? 'працівники'
+                              : 'працівників'}
+                        </span>
                       </div>
                       <div>
                         <span className={styles.statLabel}>Статус змін:</span>

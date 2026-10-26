@@ -307,11 +307,11 @@ export default function AdminShiftRegister({
                   </svg>
                 </div>
                 <div>
-                  <span className={styles.statLabel}>Співробітників сьогодні</span>
+                  <span className={styles.statLabel}>Працівників сьогодні</span>
                   <span className={styles.statValue}>3</span>
                 </div>
               </div>
-              <span className={styles.statBadgeSuccess}>Активні явочні</span>
+              <span className={styles.statBadgeSuccess}>На зміні</span>
             </div>
 
             <div className={styles.statCard}>
