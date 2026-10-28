@@ -11,7 +11,8 @@ export default function NotificationsPopover({
   className = '',
 }: NotificationsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [unread, setUnread] = useState(hasUnread);
+  // Mock unread counter: 3 items below; cleared by "Прочитати всі".
+  const [unreadCount, setUnreadCount] = useState(hasUnread ? 3 : 0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,12 +30,9 @@ export default function NotificationsPopover({
       <button
         type="button"
         title="Сповіщення"
-        aria-label="Сповіщення"
+        aria-label={unreadCount ? `Сповіщення: ${unreadCount} непрочитаних` : 'Сповіщення'}
         aria-expanded={isOpen}
-        onClick={() => {
-          setIsOpen((prev) => !prev);
-          setUnread(false);
-        }}
+        onClick={() => setIsOpen((prev) => !prev)}
         className={`${styles.bellButton} ${isOpen ? styles.bellButtonActive : ''}`}
       >
         <svg
@@ -50,7 +48,7 @@ export default function NotificationsPopover({
             d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
           />
         </svg>
-        {unread && <span className={styles.badgeDot} />}
+        {unreadCount > 0 && <span className={styles.badgeCount}>{unreadCount}</span>}
       </button>
 
       {isOpen && (
@@ -61,8 +59,10 @@ export default function NotificationsPopover({
           aria-label="Список сповіщень"
         >
           <div className={styles.popoverHeader}>
-            <span className={styles.popoverTitle}>Сповіщення</span>
-            <button type="button" onClick={() => setUnread(false)} className={styles.markAllBtn}>
+            <span className={styles.popoverTitle}>
+              Сповіщення {unreadCount > 0 && `(${unreadCount})`}
+            </span>
+            <button type="button" onClick={() => setUnreadCount(0)} className={styles.markAllBtn}>
               Прочитати всі
             </button>
           </div>

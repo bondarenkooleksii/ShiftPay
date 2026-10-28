@@ -13,7 +13,12 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeArchive from './pages/employee/EmployeeArchive';
 import AdminShiftRegister from './pages/AdminShiftRegister';
 import AdminWorkers from './pages/admin/AdminWorkers';
-// PHASE2-IMPORTS
+import AdminAdjustments from './pages/admin/AdminAdjustments';
+import AdminSettings from './pages/admin/AdminSettings';
+import EmployeeProfile from './pages/employee/EmployeeProfile';
+import OwnerAnalytics from './pages/owner/OwnerAnalytics';
+import OwnerSettings from './pages/owner/OwnerSettings';
+import SupportPage from './pages/owner/SupportPage';
 import NotFoundPage from './pages/NotFoundPage';
 import {
   initialAdjustments,
@@ -68,14 +73,18 @@ export default function App() {
       element: <EmployeeDashboard onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />,
     },
     { path: '/employee/archive', element: <EmployeeArchive /> },
-    // PHASE2-EMPLOYEE
+    { path: '/employee/settings', element: <EmployeeProfile /> },
 
     {
       path: '/admin',
       element: <AdminShiftRegister onLogout={handleLogout} onRoleSwitch={handleRoleCycle} />,
     },
-    // PHASE2-ADMIN
+    {
+      path: '/admin/adjustments',
+      element: <AdminAdjustments requests={adjustments} onChange={setAdjustments} />,
+    },
     { path: '/admin/workers', element: <AdminWorkers /> },
+    { path: '/admin/settings', element: <AdminSettings /> },
 
     {
       path: '/owner',
@@ -83,7 +92,9 @@ export default function App() {
     },
     { path: '/owner/team', element: <OwnerTeam venues={venues} /> },
     { path: '/owner/shifts', element: <OwnerShifts venues={venues} /> },
-    // PHASE2-OWNER
+    { path: '/owner/analytics', element: <OwnerAnalytics /> },
+    { path: '/owner/settings', element: <OwnerSettings /> },
+    { path: '/owner/support', element: <SupportPage /> },
   ];
 
   const modals = (
