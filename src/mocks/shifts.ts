@@ -1,0 +1,107 @@
+import type { EmployeeShift, PayrollShift, ShiftTemplate } from '@/types';
+
+export const initialEmployeeShifts: EmployeeShift[] = [
+  {
+    id: 's1',
+    date: '24.09.2026',
+    type: 'Денна зміна (08:00 - 20:00, перерва 30 хв)',
+    hours: 11.5,
+    amount: 1035,
+    status: 'Підтверджено',
+  },
+  {
+    id: 's2',
+    date: '22.09.2026',
+    type: 'Денна зміна (08:00 - 20:00, перерва 30 хв)',
+    hours: 11.5,
+    amount: 1035,
+    status: 'Підтверджено',
+  },
+  {
+    id: 's3',
+    date: '20.09.2026',
+    type: 'Денна зміна (08:00 - 16:00, без перерви)',
+    hours: 8.0,
+    amount: 720,
+    status: 'На модерації',
+  },
+];
+
+export const initialPayrollShifts: PayrollShift[] = [
+  {
+    id: 'p1',
+    date: '24.09.2026',
+    worker: 'Бондаренко Олексій',
+    role: 'Бариста',
+    venue: 'Coffee Corner • Центр',
+    hours: 11.5,
+    rate: 90,
+    status: 'Підтверджено',
+  },
+  {
+    id: 'p2',
+    date: '24.09.2026',
+    worker: 'Шевченко Лілія',
+    role: 'Бариста',
+    venue: 'Coffee Corner • Центр',
+    hours: 8,
+    rate: 95,
+    status: 'Підтверджено',
+  },
+  {
+    id: 'p3',
+    date: '24.09.2026',
+    worker: 'Мельник Анна',
+    role: 'Касир',
+    venue: 'Coffee Corner • Поділ',
+    hours: 8,
+    rate: 85,
+    status: 'Очікує',
+  },
+  {
+    id: 'p4',
+    date: '23.09.2026',
+    worker: 'Іванов Денис',
+    role: 'Адміністратор',
+    venue: 'Coffee Corner • Центр',
+    hours: 10,
+    rate: 140,
+    status: 'Підтверджено',
+  },
+  {
+    id: 'p5',
+    date: '23.09.2026',
+    worker: 'Коваленко Дмитро',
+    role: 'Офіціант',
+    venue: 'Coffee Corner • Поділ',
+    hours: 6,
+    rate: 80,
+    status: 'Виплачено',
+  },
+  {
+    id: 'p6',
+    date: '22.09.2026',
+    worker: 'Бондаренко Олексій',
+    role: 'Бариста',
+    venue: 'Coffee Corner • Центр',
+    hours: 11.5,
+    rate: 90,
+    status: 'Виплачено',
+  },
+  {
+    id: 'p7',
+    date: '22.09.2026',
+    worker: 'Мельник Анна',
+    role: 'Касир',
+    venue: 'Coffee Corner • Поділ',
+    hours: 8,
+    rate: 85,
+    status: 'Виплачено',
+  },
+];
+
+export const initialTemplates: ShiftTemplate[] = [
+  { id: 'tpl1', name: 'Денна зміна', start: '08:00', end: '20:00', breakMinutes: 30 },
+  { id: 'tpl2', name: 'Ранкова зміна', start: '08:00', end: '16:00', breakMinutes: 0 },
+  { id: 'tpl3', name: 'Вечірня зміна', start: '16:00', end: '22:00', breakMinutes: 0 },
+];
