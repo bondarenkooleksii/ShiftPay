@@ -22,7 +22,7 @@ function exportCsv(period: string) {
     ...weeklyHours.map((d) => [d.day, String(d.hours)]),
   ];
   const csv = rows.map((r) => r.map((c) => `"${c}"`).join(';')).join('\n');
-  // BOM so Excel opens Cyrillic correctly.
+
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -41,7 +41,6 @@ export default function OwnerAnalytics() {
   const peak = peakHours.reduce((a, b) => (b.load > a.load ? b : a));
   const utilization = Math.round((totalCost / MONTHLY_BUDGET) * 100);
 
-  // Gauge: semicircle arc length for the utilization share.
   const radius = 80;
   const arc = Math.PI * radius;
   const filled = (Math.min(utilization, 100) / 100) * arc;

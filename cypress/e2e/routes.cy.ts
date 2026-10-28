@@ -1,4 +1,3 @@
-// Every dashboard route renders its own page (no dead sidebar links).
 const ROUTES: Array<[path: string, title: string]> = [
   ['/employee', 'Особистий кабінет'],
   ['/employee/archive', 'Архів чеків та виплат'],

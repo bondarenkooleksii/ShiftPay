@@ -18,7 +18,6 @@ function finderCell(x: number, y: number) {
   return edge || core;
 }
 
-// Decorative QR-like pattern. Not scannable — it only visualises the invite link.
 export default function FakeQrCode({ seed, size = 160 }: FakeQrCodeProps) {
   let hash = 0;
   for (const ch of seed) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;

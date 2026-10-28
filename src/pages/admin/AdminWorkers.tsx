@@ -18,7 +18,6 @@ export default function AdminWorkers() {
   const [clockingOut, setClockingOut] = useState<DutyWorker | null>(null);
   const [adjustedHours, setAdjustedHours] = useState('');
 
-  // Mock live timer: every minute, add a minute to everyone still on shift.
   useEffect(() => {
     const id = setInterval(() => {
       setWorkers((prev) =>

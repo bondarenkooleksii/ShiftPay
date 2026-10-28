@@ -1,5 +1,3 @@
-// Mock data for the frontend-only demo. Replace with API calls once a backend exists.
-
 export type UserRole = 'owner' | 'admin' | 'employee';
 
 export interface Venue {
@@ -91,8 +89,6 @@ export const USERS: Record<
   },
 };
 
-/* ---------- Owner: team ---------- */
-
 export const STAFF_ROLES = ['Бариста', 'Адміністратор', 'Касир', 'Офіціант'];
 
 export interface TeamMember {
@@ -152,8 +148,6 @@ export const initialTeam: TeamMember[] = [
     phone: '+380 66 909 80 70',
   },
 ];
-
-/* ---------- Owner: shifts & payroll ---------- */
 
 export interface PayrollShift {
   id: string;
@@ -239,8 +233,6 @@ export const initialPayrollShifts: PayrollShift[] = [
   },
 ];
 
-/* ---------- Owner: analytics ---------- */
-
 export const ANALYTICS_PERIODS = ['Вересень 2026', 'Останні 30 днів', 'Квартал'];
 
 export const venueLaborCost = [
@@ -267,8 +259,6 @@ export const peakHours = [
   { hour: '18:00', load: 88 },
   { hour: '20:00', load: 40 },
 ];
-
-/* ---------- Employee: payout archive ---------- */
 
 export interface Payslip {
   id: string;
@@ -358,8 +348,6 @@ export const payslips: Payslip[] = [
   },
 ];
 
-/* ---------- Admin: workers on duty ---------- */
-
 export type DutyStatus = 'active' | 'break' | 'finished';
 
 export interface DutyWorker {
@@ -405,8 +393,6 @@ export const initialDutyWorkers: DutyWorker[] = [
     status: 'finished',
   },
 ];
-
-/* ---------- Admin: adjustment requests ---------- */
 
 export interface AdjustmentRequest {
   id: string;
@@ -454,8 +440,6 @@ export const initialAdjustments: AdjustmentRequest[] = [
   },
 ];
 
-/* ---------- Admin: shift templates ---------- */
-
 export interface ShiftTemplate {
   id: string;
   name: string;
@@ -469,8 +453,6 @@ export const initialTemplates: ShiftTemplate[] = [
   { id: 'tpl2', name: 'Ранкова зміна', start: '08:00', end: '16:00', breakMinutes: 0 },
   { id: 'tpl3', name: 'Вечірня зміна', start: '16:00', end: '22:00', breakMinutes: 0 },
 ];
-
-/* ---------- Owner: support FAQ ---------- */
 
 export const faqItems = [
   {

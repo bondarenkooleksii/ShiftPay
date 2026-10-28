@@ -60,7 +60,6 @@ export default function App() {
   const handleRoleCycle = () =>
     navigate(role === 'employee' ? '/admin' : role === 'admin' ? '/owner' : '/employee');
 
-  // Pages inside the dashboard layout. Also used by Figma Canvas mode to show the active screen.
   const dashboardRoutes: Array<{ path: string; element: React.ReactNode }> = [
     {
       path: '/employee',

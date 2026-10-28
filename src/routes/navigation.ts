@@ -1,6 +1,5 @@
 import type { UserRole } from '../data/mockData';
 
-// Sidebar nav id -> URL. 'settings' depends on role, so it is resolved in navPathFor.
 const NAV_PATHS: Record<string, string> = {
   venues: '/owner',
   team: '/owner/team',

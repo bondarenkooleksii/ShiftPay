@@ -3,7 +3,6 @@ import PageHeader from '../../components/PageHeader';
 import Toggle from '../../components/Toggle';
 import page from '../../styles/page.module.css';
 
-// "UA21 3223 1300 0002 6007 2335 6600 1" — groups of 4 after the country code.
 const formatIban = (raw: string) => {
   const clean = raw
     .toUpperCase()
@@ -14,7 +13,6 @@ const formatIban = (raw: string) => {
 
 const isValidIban = (value: string) => /^UA\d{27}$/.test(value.replace(/\s/g, ''));
 
-// "+380 67 123 45 67"
 const formatPhone = (raw: string) => {
   const digits = raw.replace(/\D/g, '').replace(/^380/, '').slice(0, 9);
   const parts = [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)];

@@ -22,7 +22,6 @@ const ROLE_NAMES: Record<UserRole, string> = {
   employee: 'Працівник',
 };
 
-// "Figma Canvas" mode: shows the current screen plus fixed artboards side by side.
 export default function CanvasView({
   role,
   activeNav,

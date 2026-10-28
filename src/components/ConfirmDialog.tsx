@@ -13,7 +13,6 @@ interface ConfirmDialogProps {
   children?: React.ReactNode;
 }
 
-// Red-styled confirmation for destructive actions (deactivate, reject, clock out early).
 export default function ConfirmDialog({
   isOpen,
   title,
