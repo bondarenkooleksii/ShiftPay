@@ -1,0 +1,68 @@
+.kpiAccent {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 70%);
+  border-color: #bae6fd;
+}
+
+.totalBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-primary-light);
+  border: 1px solid #bae6fd;
+}
+
+.totalValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.methodGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.methodCard {
+  text-align: left;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-input);
+  background-color: #ffffff;
+  transition: border-color 0.15s ease;
+}
+
+.methodCard:hover {
+  border-color: var(--color-primary);
+}
+
+.methodCardActive {
+  border-color: var(--color-primary);
+  background-color: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.paidState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.paidIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

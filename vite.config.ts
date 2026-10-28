@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Vite configuration for local development
 export default defineConfig({
   plugins: [react()],
   resolve: {

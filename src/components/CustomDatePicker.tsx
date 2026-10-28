@@ -71,7 +71,6 @@ export default function CustomDatePicker({
   const initialFormat: 'iso' | 'dot' = value && value.includes('-') ? 'iso' : 'dot';
   const selectedDate = value ? parseDate(value) : null;
 
-  // View state for month navigation
   const [viewYear, setViewYear] = useState(selectedDate ? selectedDate.getFullYear() : 2026);
   const [viewMonth, setViewMonth] = useState(selectedDate ? selectedDate.getMonth() : 8); // 8 = September
 
@@ -125,17 +124,14 @@ export default function CustomDatePicker({
     setIsOpen(false);
   };
 
-  // Build calendar matrix
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
-  // In JavaScript, Sunday is 0. Convert so Monday is 0:
   const startOffset = (firstDayOfWeek + 6) % 7;
 
   const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
 
   const calendarCells = [];
 
-  // Previous month trailing days
   for (let i = startOffset - 1; i >= 0; i--) {
     const day = prevMonthDays - i;
     calendarCells.push({
@@ -146,7 +142,6 @@ export default function CustomDatePicker({
     });
   }
 
-  // Current month days
   for (let day = 1; day <= daysInMonth; day++) {
     calendarCells.push({
       day,
@@ -156,7 +151,6 @@ export default function CustomDatePicker({
     });
   }
 
-  // Next month leading days to complete weeks
   const totalCells = Math.ceil(calendarCells.length / 7) * 7;
   const remaining = totalCells - calendarCells.length;
   for (let day = 1; day <= remaining; day++) {

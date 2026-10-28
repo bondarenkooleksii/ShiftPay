@@ -84,7 +84,6 @@
   background-color: #f1f5f9;
 }
 
-/* Modal styles for Add Venue */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -243,7 +242,6 @@
   background-color: var(--color-primary-hover);
 }
 
-/* Canvas Mode */
 .canvasWrapper {
   display: flex;
   flex-direction: column;

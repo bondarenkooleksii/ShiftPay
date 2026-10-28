@@ -13,6 +13,7 @@ interface SidebarProps {
     roleLabel: string;
     venueLabel?: string;
   };
+  badges?: Record<string, string>;
 }
 
 export default function Sidebar({
@@ -22,6 +23,7 @@ export default function Sidebar({
   onLogout,
   onRoleSwitch,
   user,
+  badges = {},
 }: SidebarProps) {
   const isOwner = roleType === 'owner';
   const isAdmin = roleType === 'admin';
@@ -220,7 +222,9 @@ export default function Sidebar({
                     </svg>
                     <span>Коригування заявок</span>
                   </div>
-                  <span className={styles.badgePending}>1 на розгляді</span>
+                  {badges.adjustments && (
+                    <span className={styles.badgePending}>{badges.adjustments}</span>
+                  )}
                 </div>
               </button>
 
