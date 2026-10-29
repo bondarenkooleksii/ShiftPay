@@ -45,7 +45,6 @@
   background-color: var(--color-primary-light);
   color: var(--color-primary);
 }
-
 .canvasToggleBtn {
   padding: 0.25rem 0.75rem;
   color: #475569;
@@ -58,7 +57,6 @@
   align-items: center;
   gap: 0.375rem;
 }
-
 .canvasToggleBtn:hover {
   color: var(--color-text-main);
   background-color: #f1f5f9;
