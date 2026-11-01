@@ -1,0 +1,91 @@
+.hBars {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hBarRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hBarLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hBarTrack {
+  height: 14px;
+  border-radius: var(--radius-full);
+  background-color: #f1f5f9;
+  overflow: hidden;
+}
+
+.hBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, #38bdf8, var(--color-primary));
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gaugeValue {
+  margin-top: -2.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vBars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+  height: 220px;
+}
+
+.vBarCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.vBarValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vBarTrack {
+  flex: 1;
+  width: 100%;
+  max-width: 56px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-md);
+  background-color: #f8fafc;
+}
+
+.vBarFill {
+  width: 100%;
+  border-radius: var(--radius-md);
+  background-color: #7dd3fc;
+}
+
+.vBarPeak {
+  background-color: var(--color-primary);
+}
+
+.vBarLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
