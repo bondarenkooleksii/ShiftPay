@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './Sidebar.module.css';
 
 interface SidebarProps {
   roleType: 'owner' | 'employee' | 'admin';
@@ -26,42 +27,35 @@ export default function Sidebar({
   const isAdmin = roleType === 'admin';
 
   return (
-    <aside className="w-[280px] h-full bg-[#FFFFFF] border-r border-[#E2E8F0] flex flex-col justify-between shrink-0 z-20 select-none">
-      <div className="p-6 flex flex-col">
-        <div className="flex items-center justify-between pb-6 border-b border-[#F1F5F9]">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-9 h-9 rounded-xl bg-[#0284C7] flex items-center justify-center text-white shadow-sm shadow-sky-500/25 select-none"
-              aria-hidden="true"
-            >
-              <span className="font-bold text-[15px] tracking-tight">[S/]</span>
+    <aside className={styles.sidebar}>
+      <div className={styles.topSection}>
+        <div className={styles.brandHeader}>
+          <div className={styles.brandGroup}>
+            <div className={styles.brandLogo} aria-hidden="true">
+              <span>[S/]</span>
             </div>
-            <span className="text-[20px] font-bold tracking-tight text-[#0F172A]">ShiftPay</span>
+            <span className={styles.brandText}>ShiftPay</span>
           </div>
 
           <button
             type="button"
             onClick={onRoleSwitch}
             title="Перемкнути роль для тестування"
-            className="px-2.5 py-1 text-[11px] font-semibold text-[#0284C7] bg-[#E0F2FE] hover:bg-sky-200/70 transition-colors rounded-full border border-sky-200 cursor-pointer"
+            className={styles.roleBadge}
           >
             {isOwner ? 'Власник' : isAdmin ? 'Адміністратор' : 'Працівник'}
           </button>
         </div>
 
-        <nav className="mt-6 flex flex-col gap-2" aria-label="Головна навігація">
+        <nav className={styles.nav} aria-label="Головна навігація">
           {isOwner ? (
             <>
               <button
                 onClick={() => onNavigate('venues')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'venues'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'venues' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className={`w-5 h-5 shrink-0 ${activeNav === 'venues' ? 'text-[#0284C7]' : 'text-[#64748B]'}`}
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -78,14 +72,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('team')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'team'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'team' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -102,14 +92,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('shifts')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'shifts'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'shifts' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -126,14 +112,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('analytics')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'analytics'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'analytics' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -148,18 +130,14 @@ export default function Sidebar({
                 <span>Аналітика</span>
               </button>
 
-              <div className="my-2 border-t border-[#F1F5F9]" />
+              <div className={styles.divider} />
 
               <button
                 onClick={() => onNavigate('settings')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'settings'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'settings' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -181,14 +159,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('support')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'support'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'support' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -207,14 +181,10 @@ export default function Sidebar({
             <>
               <button
                 onClick={() => onNavigate('register')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'register'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'register' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className={`w-5 h-5 shrink-0 ${activeNav === 'register' ? 'text-[#0284C7]' : 'text-[#64748B]'}`}
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -231,43 +201,35 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('adjustments')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'adjustments'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'adjustments' ? styles.navButtonActive : ''}`}
               >
-                <div className="flex items-center gap-3">
-                  <svg
-                    className={`w-5 h-5 shrink-0 ${activeNav === 'adjustments' ? 'text-[#0284C7]' : 'text-[#64748B]'}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                    />
-                  </svg>
-                  <span>Коригування заявок</span>
+                <div className={styles.navButtonContent}>
+                  <div className={styles.navLeft}>
+                    <svg
+                      className={styles.navIcon}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                      />
+                    </svg>
+                    <span>Коригування заявок</span>
+                  </div>
+                  <span className={styles.badgePending}>1 pending</span>
                 </div>
-                <span className="px-2 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">
-                  1 pending
-                </span>
               </button>
 
               <button
                 onClick={() => onNavigate('workers')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'workers'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'workers' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -282,18 +244,14 @@ export default function Sidebar({
                 <span>Працівники на зміні</span>
               </button>
 
-              <div className="my-2 border-t border-[#F1F5F9]" />
+              <div className={styles.divider} />
 
               <button
                 onClick={() => onNavigate('settings')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'settings'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'settings' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -317,14 +275,10 @@ export default function Sidebar({
             <>
               <button
                 onClick={() => onNavigate('balance')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'balance'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'balance' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className={`w-5 h-5 shrink-0 ${activeNav === 'balance' ? 'text-[#0284C7]' : 'text-[#64748B]'}`}
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -341,14 +295,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('submit-shift')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'submit-shift'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'submit-shift' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -365,14 +315,10 @@ export default function Sidebar({
 
               <button
                 onClick={() => onNavigate('archive')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'archive'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'archive' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -387,18 +333,14 @@ export default function Sidebar({
                 <span>Архів чеків та виплат</span>
               </button>
 
-              <div className="my-2 border-t border-[#F1F5F9]" />
+              <div className={styles.divider} />
 
               <button
                 onClick={() => onNavigate('profile-settings')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all text-left cursor-pointer ${
-                  activeNav === 'profile-settings'
-                    ? 'bg-[#E0F2FE] text-[#0284C7] font-semibold'
-                    : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
-                }`}
+                className={`${styles.navButton} ${activeNav === 'profile-settings' ? styles.navButtonActive : ''}`}
               >
                 <svg
-                  className="w-5 h-5 shrink-0 text-[#64748B]"
+                  className={styles.navIcon}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -417,19 +359,13 @@ export default function Sidebar({
         </nav>
       </div>
 
-      <div className="p-4 border-t border-[#E2E8F0] m-3 bg-[#F8FAFC] rounded-2xl flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-[#E0F2FE] text-[#0284C7] font-bold text-[14px] flex items-center justify-center shrink-0 border border-sky-200">
-            {user.initials}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[14px] font-semibold text-[#0F172A] truncate">{user.name}</span>
-            <span className="text-[12px] text-[#64748B] truncate">{user.roleLabel}</span>
-            {user.venueLabel && (
-              <span className="text-[11px] text-[#0284C7] truncate font-medium">
-                {user.venueLabel}
-              </span>
-            )}
+      <div className={styles.profileCard}>
+        <div className={styles.profileContent}>
+          <div className={styles.avatar}>{user.initials}</div>
+          <div className={styles.profileDetails}>
+            <span className={styles.profileName}>{user.name}</span>
+            <span className={styles.profileRole}>{user.roleLabel}</span>
+            {user.venueLabel && <span className={styles.profileVenue}>{user.venueLabel}</span>}
           </div>
         </div>
 
@@ -437,15 +373,9 @@ export default function Sidebar({
           type="button"
           title="Вийти з акаунту"
           onClick={onLogout}
-          className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-white rounded-lg transition-colors ml-1 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
+          className={styles.logoutButton}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

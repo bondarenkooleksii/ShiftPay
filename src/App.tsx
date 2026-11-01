@@ -6,6 +6,7 @@ import OwnerHome from './pages/OwnerHome';
 import EmployeeHome from './pages/EmployeeHome';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminShiftRegister from './pages/AdminShiftRegister';
+import styles from './App.module.css';
 
 type UserRole = 'owner' | 'admin' | 'employee';
 
@@ -138,7 +139,7 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="relative min-h-screen">
+      <div style={{ position: 'relative', minHeight: '100vh' }}>
         <LoginPage
           onLoginSuccess={(selectedRole) => {
             setCurrentRole(selectedRole);
@@ -153,36 +154,28 @@ export default function App() {
           }}
         />
 
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 p-1 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-slate-200 text-xs">
+        <div className={styles.floatingSwitcher}>
           <button
             onClick={() => setViewMode('app')}
-            className={`px-3 py-1 rounded-full font-medium transition-colors ${
-              viewMode === 'app'
-                ? 'bg-[#0284C7] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`${styles.roleBtn} ${viewMode === 'app' ? styles.roleBtnActive : ''}`}
           >
             💻 Додаток
           </button>
           <button
             onClick={() => setViewMode('canvas')}
-            className={`px-3 py-1 rounded-full font-medium transition-colors ${
-              viewMode === 'canvas'
-                ? 'bg-[#0284C7] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`${styles.roleBtn} ${viewMode === 'canvas' ? styles.roleBtnActive : ''}`}
           >
             📐 Figma Canvas
           </button>
         </div>
 
         {viewMode === 'canvas' && (
-          <div className="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm overflow-auto p-8 flex flex-row items-start gap-12">
-            <div className="flex flex-col gap-2 shrink-0">
-              <span className="font-mono text-xs text-sky-400 font-semibold">
-                Frame: LoginPage (1920 × 1080)
-              </span>
-              <div className="rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+          <div className={styles.loginCanvasOverlay}>
+            <div className={styles.canvasItem}>
+              <span className={styles.canvasFrameSize}>Frame: LoginPage (1920 × 1080)</span>
+              <div
+                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
+              >
                 <LoginPage
                   onLoginSuccess={(r) => {
                     setCurrentRole(r);
@@ -191,19 +184,21 @@ export default function App() {
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-2 shrink-0">
-              <span className="font-mono text-xs text-sky-400 font-semibold">
-                Frame: EmployeeDashboard (1920 × 1080)
-              </span>
-              <div className="rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+            <div className={styles.canvasItem}>
+              <span className={styles.canvasFrameSize}>Frame: EmployeeDashboard (1920 × 1080)</span>
+              <div
+                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
+              >
                 <EmployeeDashboard />
               </div>
             </div>
-            <div className="flex flex-col gap-2 shrink-0">
-              <span className="font-mono text-xs text-sky-400 font-semibold">
+            <div className={styles.canvasItem}>
+              <span className={styles.canvasFrameSize}>
                 Frame: AdminShiftRegister (1920 × 1080)
               </span>
-              <div className="rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+              <div
+                style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
+              >
                 <AdminShiftRegister showSidebar={true} />
               </div>
             </div>
@@ -215,33 +210,26 @@ export default function App() {
 
   if (viewMode === 'canvas') {
     return (
-      <div className="flex flex-col min-h-screen bg-slate-900">
-        <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#0284C7] flex items-center justify-center font-bold text-sm">
-              [S/]
-            </div>
-            <span className="font-bold text-base">ShiftPay — Режим Figma Canvas</span>
+      <div className={styles.canvasWrapper}>
+        <header className={styles.canvasHeader}>
+          <div className={styles.canvasBrand}>
+            <div className={styles.canvasLogo}>[S/]</div>
+            <span className={styles.canvasTitle}>ShiftPay — Режим Figma Canvas</span>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setViewMode('app')}
-              className="px-4 py-1.5 bg-[#0284C7] hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
-            >
+          <div>
+            <button onClick={() => setViewMode('app')} className={styles.returnAppBtn}>
               ← Повернутися до додатку
             </button>
           </div>
         </header>
 
-        <div className="flex flex-row items-start gap-12 p-8 overflow-auto flex-1">
-          <div className="flex flex-col gap-2 shrink-0">
-            <div className="flex items-center justify-between px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className={styles.canvasScroll}>
+          <div className={styles.canvasItem}>
+            <div className={styles.canvasFrameLabel}>
               <span>Активний екран: {currentRole}</span>
-              <span className="font-mono text-[11px] text-sky-400 bg-sky-950 px-2 py-0.5 rounded-md border border-sky-800">
-                Робочий вигляд
-              </span>
+              <span className={styles.canvasFrameSize}>Робочий вигляд</span>
             </div>
-            <div className="w-[1920px] h-[1080px] bg-[#F0F7FF] flex overflow-hidden rounded-3xl shadow-2xl border border-slate-800">
+            <div className={styles.canvasFrame}>
               <Sidebar
                 roleType={currentRole}
                 activeNav={activeNav}
@@ -276,14 +264,14 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 shrink-0">
-            <div className="flex items-center justify-between px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className={styles.canvasItem}>
+            <div className={styles.canvasFrameLabel}>
               <span>Frame: EmployeeDashboard</span>
-              <span className="font-mono text-[11px] text-sky-400 bg-sky-950 px-2 py-0.5 rounded-md border border-sky-800">
-                1920 × 1080 px
-              </span>
+              <span className={styles.canvasFrameSize}>1920 × 1080 px</span>
             </div>
-            <div className="w-[1920px] h-[1080px] rounded-3xl shadow-2xl border border-slate-800 overflow-hidden">
+            <div
+              style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
+            >
               <EmployeeDashboard
                 onLogout={() => setIsAuthenticated(false)}
                 onRoleSwitch={handleRoleCycle}
@@ -291,14 +279,14 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 shrink-0">
-            <div className="flex items-center justify-between px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className={styles.canvasItem}>
+            <div className={styles.canvasFrameLabel}>
               <span>Frame: AdminShiftRegister</span>
-              <span className="font-mono text-[11px] text-sky-400 bg-sky-950 px-2 py-0.5 rounded-md border border-sky-800">
-                1920 × 1080 px
-              </span>
+              <span className={styles.canvasFrameSize}>1920 × 1080 px</span>
             </div>
-            <div className="w-[1920px] h-[1080px] rounded-3xl shadow-2xl border border-slate-800 overflow-hidden">
+            <div
+              style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
+            >
               <AdminShiftRegister
                 showSidebar={true}
                 onLogout={() => setIsAuthenticated(false)}
@@ -312,7 +300,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-screen bg-[#F0F7FF] flex overflow-hidden font-sans select-none relative text-[#0F172A]">
+    <div className={styles.appContainer}>
       <Sidebar
         roleType={currentRole}
         activeNav={activeNav}
@@ -327,7 +315,7 @@ export default function App() {
         user={currentUser}
       />
 
-      <div className="flex-1 h-full flex flex-col min-w-0 overflow-hidden">
+      <div className={styles.mainArea}>
         {currentRole === 'owner' ? (
           activeNav === 'shifts' ? (
             <AdminShiftRegister
@@ -351,19 +339,15 @@ export default function App() {
         )}
       </div>
 
-      <div className="fixed bottom-4 right-6 z-40 flex items-center gap-2 p-1.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 text-xs">
-        <div className="flex items-center gap-1 px-2 border-r border-slate-200">
-          <span className="text-slate-400 font-medium mr-1">Роль:</span>
+      <div className={styles.floatingSwitcher}>
+        <div className={styles.roleGroup}>
+          <span className={styles.roleLabel}>Роль:</span>
           <button
             onClick={() => {
               setCurrentRole('employee');
               setActiveNav('balance');
             }}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-              currentRole === 'employee'
-                ? 'bg-[#E0F2FE] text-[#0284C7]'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`${styles.roleBtn} ${currentRole === 'employee' ? styles.roleBtnActive : ''}`}
           >
             Працівник
           </button>
@@ -372,11 +356,7 @@ export default function App() {
               setCurrentRole('admin');
               setActiveNav('register');
             }}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-              currentRole === 'admin'
-                ? 'bg-[#E0F2FE] text-[#0284C7]'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`${styles.roleBtn} ${currentRole === 'admin' ? styles.roleBtnActive : ''}`}
           >
             Адмін
           </button>
@@ -385,11 +365,7 @@ export default function App() {
               setCurrentRole('owner');
               setActiveNav('venues');
             }}
-            className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-              currentRole === 'owner'
-                ? 'bg-[#E0F2FE] text-[#0284C7]'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`${styles.roleBtn} ${currentRole === 'owner' ? styles.roleBtnActive : ''}`}
           >
             Власник
           </button>
@@ -398,7 +374,7 @@ export default function App() {
         <button
           onClick={() => setViewMode(viewMode === 'app' ? 'canvas' : 'app')}
           title="Переглянути дизайн у форматі Figma Canvas (усі екрани поряд)"
-          className="px-3 py-1 text-slate-600 hover:text-slate-900 font-medium rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+          className={styles.canvasToggleBtn}
         >
           <span>📐 Figma Canvas</span>
         </button>
@@ -411,51 +387,34 @@ export default function App() {
       />
 
       {isAddVenueOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150 select-none"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-[480px] bg-white rounded-2xl border border-[#E2E8F0] shadow-2xl p-7 relative">
+        <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+          <div className={styles.modalCard}>
             <button
               onClick={() => setIsAddVenueOpen(false)}
-              className="absolute top-5 right-5 text-[#94A3B8] hover:text-[#0F172A] p-1 rounded-lg cursor-pointer"
+              className={styles.modalCloseBtn}
+              aria-label="Закрити модальне вікно"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-[#E0F2FE] text-[#0284C7] flex items-center justify-center">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
+            <div className={styles.modalHeader}>
+              <div className={styles.modalHeaderIcon} aria-hidden="true">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-[18px] font-bold text-[#0F172A]">Додати новий заклад</h3>
-                <p className="text-[13px] text-[#64748B]">
-                  Вкажіть базову інформацію про ваш бізнес
-                </p>
+                <h3 className={styles.modalTitle}>Додати новий заклад</h3>
+                <p className={styles.modalSubtitle}>Вкажіть базову інформацію про ваш бізнес</p>
               </div>
             </div>
 
-            <form onSubmit={handleCreateVenue} className="flex flex-col gap-4">
-              <div>
-                <label className="text-[13px] font-medium text-[#64748B] block mb-1">
-                  Назва закладу <span className="text-rose-500">*</span>
+            <form onSubmit={handleCreateVenue} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Назва закладу <span className={styles.required}>*</span>
                 </label>
                 <input
                   type="text"
@@ -463,18 +422,16 @@ export default function App() {
                   placeholder="наприклад, Espresso Bar №1"
                   value={newVenueName}
                   onChange={(e) => setNewVenueName(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-3.5 py-2 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white"
+                  className={styles.input}
                 />
               </div>
 
-              <div>
-                <label className="text-[13px] font-medium text-[#64748B] block mb-1">
-                  Тип закладу
-                </label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Тип закладу</label>
                 <select
                   value={newVenueType}
                   onChange={(e) => setNewVenueType(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-3.5 py-2 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white"
+                  className={styles.select}
                 >
                   <option value="Кав’ярня">Кав’ярня</option>
                   <option value="Ресторан">Ресторан</option>
@@ -485,31 +442,26 @@ export default function App() {
                 </select>
               </div>
 
-              <div>
-                <label className="text-[13px] font-medium text-[#64748B] block mb-1">
-                  Адреса розташування
-                </label>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Адреса розташування</label>
                 <input
                   type="text"
                   placeholder="м. Київ, вул. Хрещатик, 15"
                   value={newVenueAddress}
                   onChange={(e) => setNewVenueAddress(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-3.5 py-2 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0284C7] focus:bg-white"
+                  className={styles.input}
                 />
               </div>
 
-              <div className="mt-4 pt-4 border-t border-[#F1F5F9] flex items-center justify-end gap-3">
+              <div className={styles.modalActions}>
                 <button
                   type="button"
                   onClick={() => setIsAddVenueOpen(false)}
-                  className="px-4 py-2 text-[14px] font-medium text-[#64748B] hover:text-[#0F172A] rounded-lg cursor-pointer"
+                  className={styles.cancelBtn}
                 >
                   Скасувати
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#0284C7] hover:bg-[#0369a1] text-white text-[14px] font-semibold rounded-lg shadow-sm cursor-pointer"
-                >
+                <button type="submit" className={styles.saveBtn}>
                   Зберегти та почати
                 </button>
               </div>
