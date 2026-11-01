@@ -1,48 +1,96 @@
 import React, { useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
-import { formatUAH } from '@/shared/lib/format';
-import { initialPayrollShifts } from '@/mocks/shifts';
-import type { PayrollShift, Venue } from '@/types';
+import QueryState from '@/shared/ui/QueryState';
+import StatusFlow, { type FlowStep } from '@/shared/ui/StatusFlow';
+import { useVenues } from '@/api/organization';
+import { usePayout } from '@/api/payroll';
+import { useShifts } from '@/api/shifts';
+import { formatDate, formatUAH } from '@/shared/lib/format';
+import {
+  isPayable,
+  periodLabel,
+  SHIFT_STATUS_LABEL,
+  shiftAmount,
+  sumAmount,
+  sumHours,
+} from '@/shared/lib/payroll';
+import type { PayoutMethod, Shift, ShiftStatus } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import PayoutModal from './PayoutModal';
 import styles from './OwnerShiftsPage.module.css';
 
-interface OwnerShiftsPageProps {
-  venues: Venue[];
-}
-
 const ALL_VENUES = 'Усі заклади';
 
-const STATUS_BADGE: Record<PayrollShift['status'], string> = {
-  Підтверджено: page.badgeInfo,
-  Очікує: page.badgeWarning,
-  Виплачено: page.badgeSuccess,
+type Stage = 'review' | 'confirmed' | 'paid';
+
+const STAGE_OF: Partial<Record<ShiftStatus, Stage>> = {
+  pending: 'review',
+  clarify: 'review',
+  confirmed: 'confirmed',
+  paid: 'paid',
 };
 
-export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
-  const [shifts, setShifts] = useState<PayrollShift[]>(initialPayrollShifts);
+const STAGES: Omit<FlowStep<Stage>, 'count' | 'amount'>[] = [
+  {
+    key: 'review',
+    label: 'Чекає адміністратора',
+    hint: 'Ще не перевірено — не до виплати',
+    tone: 'warning',
+  },
+  {
+    key: 'confirmed',
+    label: 'До виплати',
+    hint: 'Підтверджено — увійде в найближчу виплату',
+    tone: 'info',
+  },
+  { key: 'paid', label: 'Виплачено', hint: 'Працівники отримали чеки', tone: 'success' },
+];
+
+const STATUS_BADGE: Record<ShiftStatus, string> = {
+  confirmed: page.badgeInfo,
+  pending: page.badgeWarning,
+  clarify: page.badgeWarning,
+  rejected: page.badgeDanger,
+  paid: page.badgeSuccess,
+};
+
+export default function OwnerShiftsPage() {
+  const shiftsQuery = useShifts();
+  const { data: venues = [] } = useVenues();
+  const payout = usePayout();
+  const shifts = (shiftsQuery.data ?? []).filter((s) => s.status !== 'rejected');
   const [venueFilter, setVenueFilter] = useState(ALL_VENUES);
   const [groupBy, setGroupBy] = useState<'date' | 'worker'>('date');
   const [isPayoutOpen, setIsPayoutOpen] = useState(false);
+  const [stage, setStage] = useState<Stage | null>(null);
 
   const visible = shifts.filter((s) => venueFilter === ALL_VENUES || s.venue === venueFilter);
-  const totalHours = visible.reduce((sum, s) => sum + s.hours, 0);
-  const totalAccrued = visible.reduce((sum, s) => sum + s.hours * s.rate, 0);
-  const payable = visible.filter((s) => s.status === 'Підтверджено');
-  const pendingPayout = payable.reduce((sum, s) => sum + s.hours * s.rate, 0);
+  const accrued = visible.filter((s) => s.status === 'confirmed' || s.status === 'paid');
+  const totalHours = sumHours(accrued);
+  const totalAccrued = sumAmount(accrued);
+  const payable = visible.filter(isPayable);
+  const pendingPayout = sumAmount(payable);
 
-  const groups = visible.reduce<Record<string, PayrollShift[]>>((acc, s) => {
-    const key = groupBy === 'date' ? s.date : s.worker;
+  const steps: FlowStep<Stage>[] = STAGES.map((st) => {
+    const inStage = visible.filter((s) => STAGE_OF[s.status] === st.key);
+    return { ...st, count: inStage.length, amount: formatUAH(sumAmount(inStage)) };
+  });
+  const stageLabel = STAGES.find((st) => st.key === stage)?.label;
+  const listed = visible.filter((s) => !stage || STAGE_OF[s.status] === stage);
+
+  const groups = listed.reduce<Record<string, Shift[]>>((acc, s) => {
+    const key = groupBy === 'date' ? formatDate(s.date) : s.workerName;
     (acc[key] ??= []).push(s);
     return acc;
   }, {});
 
-  const markPaid = () => {
-    const ids = new Set(payable.map((s) => s.id));
-    setShifts((prev) =>
-      prev.map((s) => (ids.has(s.id) ? { ...s, status: 'Виплачено' as const } : s))
-    );
+  const runPayout = async (method: PayoutMethod) => {
+    const result = await payout.mutate({
+      method,
+      venue: venueFilter === ALL_VENUES ? undefined : venueFilter,
+    });
+    return result?.total;
   };
 
   return (
@@ -68,7 +116,7 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Відпрацьовано годин</span>
               <span className={page.kpiValue}>{totalHours.toFixed(1)} год</span>
-              <span className={page.kpiHint}>{visible.length} змін за період</span>
+              <span className={page.kpiHint}>{accrued.length} підтверджених змін</span>
             </div>
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Нараховано зарплати</span>
@@ -82,10 +130,21 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
             </div>
           </div>
 
+          <StatusFlow
+            title="Шлях змін до виплати"
+            steps={steps}
+            active={stage}
+            onSelect={setStage}
+          />
+
           <div className={page.toolbar}>
             <div>
               <h2 className={page.sectionTitle}>Реєстр змін мережі</h2>
-              <p className={page.sectionSubtitle}>Аудит відпрацьованого часу по всіх закладах</p>
+              <p className={page.sectionSubtitle}>
+                {stageLabel
+                  ? `Показано лише етап «${stageLabel}» • ${listed.length} змін`
+                  : 'Усі зміни за закладом і статусом. Сума групи — справа від дати'}
+              </p>
             </div>
             <div className={page.toolbarGroup}>
               <div className={page.segmented} role="tablist" aria-label="Групування">
@@ -119,6 +178,12 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
             </div>
           </div>
 
+          <QueryState
+            isLoading={shiftsQuery.isLoading}
+            error={shiftsQuery.error}
+            onRetry={shiftsQuery.refetch}
+          />
+
           <div className={page.tableWrap}>
             <table className={page.table}>
               <thead>
@@ -136,7 +201,7 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
                   <React.Fragment key={group}>
                     <tr className={page.groupRow}>
                       <td colSpan={6}>
-                        {group} • {formatUAH(rows.reduce((sum, r) => sum + r.hours * r.rate, 0))}
+                        {group} • {formatUAH(sumAmount(rows))}
                       </td>
                     </tr>
                     {rows.map((s) => (
@@ -144,22 +209,22 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
                         <td>
                           {groupBy === 'date' ? (
                             <>
-                              <span className={page.personName}>{s.worker}</span>
+                              <span className={page.personName}>{s.workerName}</span>
                               <span className={page.personSub}>{s.role}</span>
                             </>
                           ) : (
-                            <span className={page.mono}>{s.date}</span>
+                            <span className={page.mono}>{formatDate(s.date)}</span>
                           )}
                         </td>
                         <td className={page.muted}>{s.venue}</td>
                         <td className={page.mono}>{s.hours} год</td>
                         <td className={page.mono}>{s.rate} ₴</td>
                         <td className={`${page.mono} ${page.strong}`}>
-                          {formatUAH(s.hours * s.rate)}
+                          {formatUAH(shiftAmount(s))}
                         </td>
                         <td className={page.textRight}>
                           <span className={`${page.badge} ${STATUS_BADGE[s.status]}`}>
-                            {s.status}
+                            {SHIFT_STATUS_LABEL[s.status]}
                           </span>
                         </td>
                       </tr>
@@ -168,8 +233,10 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
                 ))}
               </tbody>
             </table>
-            {visible.length === 0 && (
-              <div className={page.emptyState}>У цьому закладі ще немає змін</div>
+            {shiftsQuery.data && listed.length === 0 && (
+              <div className={page.emptyState}>
+                {stage ? `Немає змін на етапі «${stageLabel}»` : 'У цьому закладі ще немає змін'}
+              </div>
             )}
           </div>
         </div>
@@ -181,7 +248,10 @@ export default function OwnerShiftsPage({ venues }: OwnerShiftsPageProps) {
         total={pendingPayout}
         count={payable.length}
         venueLabel={venueFilter}
-        onConfirm={markPaid}
+        period={payable.length ? periodLabel(payable.map((s) => s.date)) : '—'}
+        isPending={payout.isPending}
+        error={payout.error?.message ?? null}
+        onConfirm={runPayout}
       />
     </div>
   );

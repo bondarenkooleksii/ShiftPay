@@ -3,6 +3,7 @@ import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import { faqItems } from '@/mocks/support';
 import { SUPPORT_CATEGORIES } from '@/shared/constants/options';
+import { useCreateTicket } from '@/api/settings';
 import page from '@/shared/styles/page.module.css';
 import styles from './OwnerSupportPage.module.css';
 
@@ -13,10 +14,12 @@ export default function OwnerSupportPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [ticketId, setTicketId] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const createTicket = useCreateTicket();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
-    setTicketId(`#${Math.floor(10000 + Math.random() * 90000)}`);
+    const result = await createTicket.mutate({ category, message });
+    if (result) setTicketId(result.ticketId);
   };
 
   const resetForm = () => {
@@ -120,7 +123,14 @@ export default function OwnerSupportPage() {
                   <span>📎 {fileName ?? 'Прикріпити файл (скріншот, PDF)'}</span>
                 </label>
                 <div className={page.formActions}>
-                  <button type="submit" className={page.primaryBtn}>
+                  {createTicket.error && (
+                    <span className={page.errorText}>{createTicket.error.message}</span>
+                  )}
+                  <button
+                    type="submit"
+                    className={page.primaryBtn}
+                    disabled={createTicket.isPending}
+                  >
                     Надіслати звернення
                   </button>
                 </div>

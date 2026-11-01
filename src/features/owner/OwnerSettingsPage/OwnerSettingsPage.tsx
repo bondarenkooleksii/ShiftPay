@@ -2,22 +2,47 @@ import React, { useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import Toggle from '@/shared/ui/Toggle';
+import QueryState from '@/shared/ui/QueryState';
+import { useOwnerSettings, useSaveOwnerSettings } from '@/api/settings';
+import type { OwnerSettings } from '@/types';
 import page from '@/shared/styles/page.module.css';
 
 const FREQUENCIES = ['Щотижня', 'Раз на два тижні', 'Щомісяця'];
 const CUTOFFS = ['Неділя', '15 та останній день місяця', 'Останній день місяця'];
 
 export default function OwnerSettingsPage() {
-  const [legalName, setLegalName] = useState('ФОП Бондаренко О. В.');
-  const [taxId, setTaxId] = useState('3245109876');
-  const [currency, setCurrency] = useState('UAH — гривня');
-  const [frequency, setFrequency] = useState(FREQUENCIES[1]);
-  const [cutoff, setCutoff] = useState(CUTOFFS[1]);
-  const [notify, setNotify] = useState({ telegram: true, email: true, shiftChanges: false });
+  const settings = useOwnerSettings();
+
+  if (!settings.data) {
+    return (
+      <div className={page.page}>
+        <PageHeader title="Налаштування" crumbs={['Головна', 'Налаштування']} />
+        <QueryState
+          isLoading={settings.isLoading}
+          error={settings.error}
+          onRetry={settings.refetch}
+        />
+      </div>
+    );
+  }
+
+  return <OwnerSettingsForm initial={settings.data} />;
+}
+
+function OwnerSettingsForm({ initial }: { initial: OwnerSettings }) {
+  const save = useSaveOwnerSettings();
+  const [legalName, setLegalName] = useState(initial.legalName);
+  const [taxId, setTaxId] = useState(initial.taxId);
+  const [currency, setCurrency] = useState(initial.currency);
+  const [frequency, setFrequency] = useState(initial.frequency);
+  const [cutoff, setCutoff] = useState(initial.cutoff);
+  const [notify, setNotify] = useState(initial.notify);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const result = await save.mutate({ legalName, taxId, currency, frequency, cutoff, notify });
+    if (!result) return;
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -139,8 +164,9 @@ export default function OwnerSettingsPage() {
           </section>
 
           <div className={page.formActions} style={{ borderTop: 'none', paddingTop: 0 }}>
+            {save.error && <span className={page.errorText}>{save.error.message}</span>}
             {saved && <span className={page.inlineSuccess}>✓ Зміни збережено</span>}
-            <button type="submit" className={page.primaryBtn}>
+            <button type="submit" className={page.primaryBtn} disabled={save.isPending}>
               Зберегти зміни
             </button>
           </div>

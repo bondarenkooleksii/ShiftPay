@@ -374,3 +374,36 @@
   font-weight: 400;
   letter-spacing: 0.025em;
 }
+
+.submitButton:disabled {
+  opacity: 0.75;
+  cursor: progress;
+}
+
+.errorBox {
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.demoHint {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.demoHint:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

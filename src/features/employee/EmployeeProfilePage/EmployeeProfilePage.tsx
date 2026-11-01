@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import Toggle from '@/shared/ui/Toggle';
+import QueryState from '@/shared/ui/QueryState';
+import { useChangePassword, useProfile, useSaveProfile } from '@/api/settings';
+import type { EmployeeProfile } from '@/types';
 import page from '@/shared/styles/page.module.css';
 
 const formatIban = (raw: string) => {
@@ -20,11 +23,28 @@ const formatPhone = (raw: string) => {
 };
 
 export default function EmployeeProfilePage() {
-  const [fullName, setFullName] = useState('Бондаренко Олексій');
-  const [phone, setPhone] = useState('+380 67 123 45 67');
-  const [telegram, setTelegram] = useState('@oleksii_barista');
-  const [iban, setIban] = useState('UA21 3223 1300 0002 6007 2335 6600 1');
-  const [notify, setNotify] = useState({ approved: true, payout: true });
+  const profile = useProfile();
+
+  if (!profile.data) {
+    return (
+      <div className={page.page}>
+        <PageHeader title="Налаштування профілю" crumbs={['Мій кабінет', 'Профіль']} />
+        <QueryState isLoading={profile.isLoading} error={profile.error} onRetry={profile.refetch} />
+      </div>
+    );
+  }
+
+  return <ProfileForm initial={profile.data} />;
+}
+
+function ProfileForm({ initial }: { initial: EmployeeProfile }) {
+  const saveProfile = useSaveProfile();
+  const changePassword = useChangePassword();
+  const [fullName, setFullName] = useState(initial.fullName);
+  const [phone, setPhone] = useState(initial.phone);
+  const [telegram, setTelegram] = useState(initial.telegram);
+  const [iban, setIban] = useState(initial.iban);
+  const [notify, setNotify] = useState(initial.notify);
   const [profileSaved, setProfileSaved] = useState(false);
 
   const [currentPwd, setCurrentPwd] = useState('');
@@ -41,15 +61,21 @@ export default function EmployeeProfilePage() {
     setTimeout(() => setter(false), 2500);
   };
 
-  const handleProfileSave = (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (ibanInvalid) return;
-    flash(setProfileSaved);
+    const saved = await saveProfile.mutate({ fullName, phone, telegram, iban, notify });
+    if (saved) flash(setProfileSaved);
   };
 
-  const handlePasswordSave = (e: React.FormEvent) => {
+  const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPwd || pwdMismatch || pwdTooShort || !newPwd) return;
+    const result = await changePassword.mutate({
+      currentPassword: currentPwd,
+      newPassword: newPwd,
+    });
+    if (result === undefined) return;
     setCurrentPwd('');
     setNewPwd('');
     setConfirmPwd('');
@@ -174,8 +200,11 @@ export default function EmployeeProfilePage() {
             </section>
 
             <div className={page.formActions} style={{ borderTop: 'none', paddingTop: 0 }}>
+              {saveProfile.error && (
+                <span className={page.errorText}>{saveProfile.error.message}</span>
+              )}
               {profileSaved && <span className={page.inlineSuccess}>✓ Профіль збережено</span>}
-              <button type="submit" className={page.primaryBtn}>
+              <button type="submit" className={page.primaryBtn} disabled={saveProfile.isPending}>
                 Зберегти зміни
               </button>
             </div>
@@ -233,8 +262,15 @@ export default function EmployeeProfilePage() {
                 </div>
               </div>
               <div className={page.formActions}>
+                {changePassword.error && (
+                  <span className={page.errorText}>{changePassword.error.message}</span>
+                )}
                 {pwdSaved && <span className={page.inlineSuccess}>✓ Пароль змінено</span>}
-                <button type="submit" className={page.secondaryBtn}>
+                <button
+                  type="submit"
+                  className={page.secondaryBtn}
+                  disabled={changePassword.isPending}
+                >
                   Оновити пароль
                 </button>
               </div>
