@@ -5,6 +5,25 @@ import type { Payslip } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import styles from './PayslipModal.module.css';
 
+function downloadReceipt(p: Payslip) {
+  const lines = [
+    `ShiftPay — розрахунковий лист ${p.receipt}`,
+    `Період: ${p.period}`,
+    `Дата виплати: ${p.paidOn}`,
+    `Години: ${p.hours} × ${p.rate} ₴`,
+    `Бонус: ${p.bonus} ₴`,
+    `Утримання: ${p.deduction} ₴`,
+    `До виплати: ${formatUAH(payslipNet(p))}`,
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${p.receipt}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function PayslipModal({
   payslip,
   onClose,
@@ -61,16 +80,24 @@ export default function PayslipModal({
               <span>До виплати</span>
               <span>{formatUAH(payslipNet(payslip))}</span>
             </div>
-            <p className={page.hint}>Виплачено {payslip.paidOn} • Coffee Corner • Центр</p>
+            <p className={page.hint}>
+              Виплачено {payslip.paidOn} •{' '}
+              {payslip.method === 'iban' ? 'переказ на IBAN' : 'готівка'} •{' '}
+              {payslip.confirmedAt ? 'отримання підтверджено' : 'очікує підтвердження'}
+            </p>
           </div>
 
           <div className={page.formActions} style={{ marginTop: 16 }}>
-            {downloaded && <span className={page.inlineSuccess}>✓ Файл підготовлено</span>}
-            <button type="button" className={page.secondaryBtn} onClick={() => setDownloaded(true)}>
-              Завантажити PNG
-            </button>
-            <button type="button" className={page.primaryBtn} onClick={() => setDownloaded(true)}>
-              Завантажити PDF
+            {downloaded && <span className={page.inlineSuccess}>✓ Файл завантажено</span>}
+            <button
+              type="button"
+              className={page.primaryBtn}
+              onClick={() => {
+                downloadReceipt(payslip);
+                setDownloaded(true);
+              }}
+            >
+              Завантажити чек (.txt)
             </button>
           </div>
         </>

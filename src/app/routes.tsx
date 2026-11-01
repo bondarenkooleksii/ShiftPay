@@ -26,35 +26,22 @@ export function useDashboardRoutes(): AppRoute[] {
   return [
     {
       path: PATHS.employee.home,
-      element: (
-        <EmployeeHomePage
-          shifts={app.employeeShifts}
-          onOpenSubmitShiftModal={() => app.setSubmitShiftOpen(true)}
-        />
-      ),
+      element: <EmployeeHomePage onOpenSubmitShiftModal={() => app.setSubmitShiftOpen(true)} />,
     },
     { path: PATHS.employee.archive, element: <EmployeeArchivePage /> },
     { path: PATHS.employee.settings, element: <EmployeeProfilePage /> },
 
     { path: PATHS.admin.home, element: <AdminShiftRegisterPage /> },
-    {
-      path: PATHS.admin.adjustments,
-      element: <AdminAdjustmentsPage requests={app.adjustments} onChange={app.setAdjustments} />,
-    },
+    { path: PATHS.admin.adjustments, element: <AdminAdjustmentsPage /> },
     { path: PATHS.admin.workers, element: <AdminWorkersPage /> },
     { path: PATHS.admin.settings, element: <AdminSettingsPage /> },
 
     {
       path: PATHS.owner.home,
-      element: (
-        <OwnerVenuesPage
-          venues={app.venues}
-          onOpenAddVenueModal={() => app.setAddVenueOpen(true)}
-        />
-      ),
+      element: <OwnerVenuesPage onOpenAddVenueModal={() => app.setAddVenueOpen(true)} />,
     },
-    { path: PATHS.owner.team, element: <OwnerTeamPage venues={app.venues} /> },
-    { path: PATHS.owner.shifts, element: <OwnerShiftsPage venues={app.venues} /> },
+    { path: PATHS.owner.team, element: <OwnerTeamPage /> },
+    { path: PATHS.owner.shifts, element: <OwnerShiftsPage /> },
     { path: PATHS.owner.analytics, element: <OwnerAnalyticsPage /> },
     { path: PATHS.owner.settings, element: <OwnerSettingsPage /> },
     { path: PATHS.owner.support, element: <OwnerSupportPage /> },

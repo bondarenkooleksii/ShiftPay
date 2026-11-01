@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import Header from '@/shared/layout/Header';
 import NotificationsPopover from '@/shared/layout/NotificationsPopover';
+import QueryState from '@/shared/ui/QueryState';
+import { useVenues } from '@/api/organization';
 import styles from './OwnerVenuesPage.module.css';
 
 interface OwnerVenuesPageProps {
-  venues: Array<{ id: string; name: string; type: string; address: string; staffCount: number }>;
   onOpenAddVenueModal: () => void;
 }
 
-export default function OwnerVenuesPage({ venues, onOpenAddVenueModal }: OwnerVenuesPageProps) {
+export default function OwnerVenuesPage({ onOpenAddVenueModal }: OwnerVenuesPageProps) {
+  const venuesQuery = useVenues();
+  const venues = venuesQuery.data ?? [];
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredVenues = venues.filter(
@@ -65,7 +68,13 @@ export default function OwnerVenuesPage({ venues, onOpenAddVenueModal }: OwnerVe
         <div aria-hidden="true" className={styles.ambientLight1} />
         <div aria-hidden="true" className={styles.ambientLight2} />
 
-        {venues.length === 0 ? (
+        <QueryState
+          isLoading={venuesQuery.isLoading}
+          error={venuesQuery.error}
+          onRetry={venuesQuery.refetch}
+        />
+
+        {!venuesQuery.data ? null : venues.length === 0 ? (
           <section aria-label="Створення закладу" className={styles.emptyCard}>
             <div className={styles.emptyIcon} aria-hidden="true">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

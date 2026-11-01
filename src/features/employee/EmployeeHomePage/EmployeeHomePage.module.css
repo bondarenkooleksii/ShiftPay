@@ -1,12 +1,10 @@
 .container {
   width: 100%;
   flex: 1;
-  height: 100%;
   display: flex;
   flex-direction: column;
   min-width: 0;
   user-select: none;
-  overflow: hidden;
 }
 
 .venueBadge {
@@ -129,10 +127,13 @@
   width: 100%;
   flex: 1;
   padding: 2rem;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.main > * {
+  flex-shrink: 0;
 }
 
 .bannerNotice {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from '@/shared/ui/Modal';
 import { formatUAH } from '@/shared/lib/format';
+import type { PayoutMethod } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import styles from './PayoutModal.module.css';
 
@@ -10,7 +11,10 @@ interface PayoutModalProps {
   total: number;
   count: number;
   venueLabel: string;
-  onConfirm: () => void;
+  period: string;
+  isPending: boolean;
+  error: string | null;
+  onConfirm: (method: PayoutMethod) => Promise<number | undefined>;
 }
 
 export default function PayoutModal({
@@ -19,13 +23,18 @@ export default function PayoutModal({
   total,
   count,
   venueLabel,
+  period,
+  isPending,
+  error,
   onConfirm,
 }: PayoutModalProps) {
-  const [method, setMethod] = useState<'cash' | 'iban'>('iban');
+  const [method, setMethod] = useState<PayoutMethod>('iban');
   const [paidTotal, setPaidTotal] = useState<number | null>(null);
+  const [paidPeriod, setPaidPeriod] = useState<string | null>(null);
 
   const close = () => {
     setPaidTotal(null);
+    setPaidPeriod(null);
     onClose();
   };
 
@@ -34,7 +43,7 @@ export default function PayoutModal({
       isOpen={isOpen}
       onClose={close}
       title="Проведення виплати"
-      subtitle={`${venueLabel} • період 16.09 – 30.09.2026`}
+      subtitle={`${venueLabel} • період ${paidPeriod ?? period}`}
       icon={<span style={{ fontWeight: 700 }}>₴</span>}
     >
       {paidTotal !== null ? (
@@ -44,7 +53,7 @@ export default function PayoutModal({
           <p className={page.muted}>
             {formatUAH(paidTotal)} •{' '}
             {method === 'iban' ? 'банківський переказ (IBAN)' : 'видача готівкою'}. Статус змін
-            змінено на «Виплачено».
+            змінено на «Виплачено», працівники отримали розрахункові листи.
           </p>
           <button type="button" className={page.primaryBtn} onClick={close}>
             Готово
@@ -81,6 +90,12 @@ export default function PayoutModal({
             </div>
           </div>
 
+          {error && (
+            <div className={page.formError} role="alert">
+              {error}
+            </div>
+          )}
+
           <div className={page.formActions}>
             <button type="button" className={page.ghostBtn} onClick={close}>
               Скасувати
@@ -88,12 +103,16 @@ export default function PayoutModal({
             <button
               type="button"
               className={page.primaryBtn}
-              onClick={() => {
-                setPaidTotal(total);
-                onConfirm();
+              disabled={isPending || count === 0}
+              onClick={async () => {
+                const currentPeriod = period;
+                const paid = await onConfirm(method);
+                if (paid === undefined) return;
+                setPaidPeriod(currentPeriod);
+                setPaidTotal(paid);
               }}
             >
-              Підтвердити виплату
+              {isPending ? 'Проводимо…' : 'Підтвердити виплату'}
             </button>
           </div>
         </div>
