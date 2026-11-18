@@ -93,14 +93,34 @@ owner's payroll list update without manual state passing.
 | Адміністратор | admin@shiftpay.ua   | admin123   |
 | Власник       | owner@shiftpay.ua   | owner123   |
 
-To reset the demo data, clear the `shiftpay.mockdb.v1` key in localStorage or send `POST /api/dev/reset`.
+To reset the mock (MSW) data, clear the `shiftpay.mockdb.v1` key in localStorage or send `POST /api/dev/reset`.
 
-## Switching to a real backend (lab 7)
+## Backend (lab 7)
 
-1. Implement the same endpoints as `mocks/server/handlers.ts` in Express.
+```
+server/
+├── tsconfig.json             Extends the root config, reuses src/types, src/mocks seed data, shared/lib/payroll.ts
+├── data/db.json              JSON database file, created from the seed on first start (git-ignored)
+└── src/
+    ├── index.ts              Starts the server (PORT, default 4000)
+    ├── app.ts                Express app: CORS, JSON body, routers under /api, 404 and error handler
+    ├── config.ts             PORT, JWT_SECRET, CORS_ORIGIN, DB_FILE (read from .env)
+    ├── db.ts                 Loads/saves db.json, seeds accounts with bcrypt password hashes
+    ├── auth.ts               JWT issue/revoke, requireAuth(roles) middleware, toPublicUser
+    ├── http.ts               HttpError + fail() helper
+    └── routes/               auth, shifts (+ duty), payroll (payouts, payslips, analytics),
+                              organization (team, venues, templates), settings (+ profile, support)
+```
+
+Run it:
+
+1. `npm run server` (API at `http://localhost:4000/api`, restarts on file changes).
 2. Create `.env` with `VITE_API_URL=http://localhost:4000/api` (see `.env.example`).
-3. With `VITE_API_URL` set, `main.tsx` skips MSW and every request goes to the server.
-   Pages and hooks need no changes.
+3. `npm run dev`. With `VITE_API_URL` set, `main.tsx` skips MSW and every request goes to Express.
+   Leave `VITE_API_URL` empty to go back to the in-browser mock API.
+
+Login returns a JWT (7 days) whose `jti` is stored in `sessions`; logout and password change revoke it.
+To reset the server data, delete `server/data/db.json` or send `POST /api/dev/reset`.
 
 ## Where do I find…
 
@@ -112,6 +132,7 @@ To reset the demo data, clear the `shiftpay.mockdb.v1` key in localStorage or se
 | How a page loads or saves data        | `api/<topic>.ts`                                    |
 | A business rule (hours, statuses)     | `shared/lib/payroll.ts`                             |
 | What the fake server answers          | `mocks/server/handlers.ts`                          |
+| What the Express server answers       | `server/src/routes/<topic>.ts`                      |
 | A sidebar item (text, icon, order)    | `app/navigation.ts`                                 |
 | A URL                                 | `app/paths.ts`                                      |
 | Which page opens on which URL         | `app/routes.tsx`                                    |
@@ -127,7 +148,8 @@ To reset the demo data, clear the `shiftpay.mockdb.v1` key in localStorage or se
 1. Add the URL to `app/paths.ts`.
 2. Create `features/<role>/<Name>Page/<Name>Page.tsx` (+ `<Name>Page.module.css` if needed).
    Start from `PageHeader` + `page.module.css` classes, like the other pages.
-3. If it needs data, add the endpoint to `mocks/server/handlers.ts` and a hook to `api/<topic>.ts`.
+3. If it needs data, add the endpoint to `mocks/server/handlers.ts` and `server/src/routes/<topic>.ts`,
+   and a hook to `api/<topic>.ts`.
    Show loading and errors with `QueryState`.
 4. Register it in `app/routes.tsx`.
 5. If it needs a sidebar item, add it to `NAV_ITEMS` in `app/navigation.ts`.
