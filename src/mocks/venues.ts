@@ -1,6 +1,6 @@
 import type { Venue } from '@/types';
 
-export const initialVenues: Venue[] = [
+export const seedVenues: Venue[] = [
   {
     id: 'v1',
     name: 'Coffee Corner • Центр',

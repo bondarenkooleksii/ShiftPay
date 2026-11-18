@@ -1,36 +1,50 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/api/auth';
+import { DEMO_CREDENTIALS } from '@/mocks/users';
+import { toApiError } from '@/shared/api/client';
+import type { UserRole } from '@/types';
 import styles from './LoginPage.module.css';
 
 interface LoginPageProps {
-  onLoginSuccess?: (role: 'employee' | 'owner' | 'admin') => void;
+  onLoginSuccess?: (role: UserRole) => void;
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
-  const navigate = useNavigate();
-  const [role, setRole] = useState<'employee' | 'owner' | 'admin'>('employee');
+  const { login } = useAuth();
+  const [role, setRole] = useState<UserRole>('employee');
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const demo = DEMO_CREDENTIALS.find((a) => a.role === role);
+
+  const selectRole = (next: UserRole) => {
+    setRole(next);
+    setError(null);
+  };
+
+  const fillDemo = () => {
+    if (!demo) return;
+    setEmailOrPhone(demo.email);
+    setPassword(demo.password);
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
-    setTimeout(() => {
+    setError(null);
+    try {
+      const user = await login({ email: emailOrPhone, password, role, remember: rememberMe });
+      onLoginSuccess?.(user.role);
+    } catch (err) {
+      setError(toApiError(err).message);
       setIsSubmitting(false);
-      if (onLoginSuccess) {
-        onLoginSuccess(role);
-      }
-      if (role === 'owner') {
-        navigate('/owner');
-      } else if (role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/employee');
-      }
-    }, 400);
+    }
   };
 
   return (
@@ -60,7 +74,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               type="button"
               role="tab"
               aria-selected={role === 'employee'}
-              onClick={() => setRole('employee')}
+              onClick={() => selectRole('employee')}
               className={`${styles.tab} ${role === 'employee' ? styles.tabActive : ''}`}
             >
               <span>Працівник</span>
@@ -70,7 +84,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               type="button"
               role="tab"
               aria-selected={role === 'admin'}
-              onClick={() => setRole('admin')}
+              onClick={() => selectRole('admin')}
               className={`${styles.tab} ${role === 'admin' ? styles.tabActive : ''}`}
             >
               <span>Адміністратор</span>
@@ -80,7 +94,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               type="button"
               role="tab"
               aria-selected={role === 'owner'}
-              onClick={() => setRole('owner')}
+              onClick={() => selectRole('owner')}
               className={`${styles.tab} ${role === 'owner' ? styles.tabActive : ''}`}
             >
               <span>Власник</span>
@@ -191,7 +205,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               </a>
             </div>
 
-            <button type="submit" className={styles.submitButton}>
+            {error && (
+              <div role="alert" className={styles.errorBox}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
               {isSubmitting ? (
                 <span className={styles.spinnerContainer}>
                   <svg className={styles.spinner} fill="none" viewBox="0 0 24 24">
@@ -216,6 +236,12 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               )}
             </button>
           </form>
+
+          {demo && (
+            <button type="button" onClick={fillDemo} className={styles.demoHint}>
+              Демо-акаунт: <strong>{demo.email}</strong> / <strong>{demo.password}</strong>
+            </button>
+          )}
 
           <div className={styles.footerLinks}>
             <p>

@@ -1,56 +1,80 @@
 import React, { useState } from 'react';
 import CustomDatePicker from '@/shared/ui/CustomDatePicker';
 import CustomSelect from '@/shared/ui/CustomSelect';
+import { useAuth } from '@/api/auth';
+import { useTemplates } from '@/api/organization';
+import { useCreateShift } from '@/api/shifts';
+import { formatHours, formatUAH } from '@/shared/lib/format';
+import { calcHours, todayIso } from '@/shared/lib/payroll';
+import page from '@/shared/styles/page.module.css';
 import styles from './SubmitShiftModal.module.css';
 
 interface SubmitShiftModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitShift: (shift: {
-    date: string;
-    type: string;
-    hours: number;
-    amount: number;
-    status: 'Підтверджено' | 'На модерації';
-  }) => void;
 }
 
-export default function SubmitShiftModal({
-  isOpen,
-  onClose,
-  onSubmitShift,
-}: SubmitShiftModalProps) {
-  const [shiftDate, setShiftDate] = useState('2026-09-25');
-  const [shiftType, setShiftType] = useState('Денна зміна (08:00 - 20:00, перерва 30 хв)');
-  const [hours, setHours] = useState('11.5');
-  const [hourlyRate] = useState(90);
+const CUSTOM = 'custom';
+
+export default function SubmitShiftModal({ isOpen, onClose }: SubmitShiftModalProps) {
+  const { user } = useAuth();
+  const { data: templates = [] } = useTemplates();
+  const createShift = useCreateShift();
+
+  const [shiftDate, setShiftDate] = useState(todayIso());
+  const [templateId, setTemplateId] = useState('tpl1');
+  const [start, setStart] = useState('08:00');
+  const [end, setEnd] = useState('20:00');
+  const [breakMinutes, setBreakMinutes] = useState('30');
+  const [note, setNote] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const h = parseFloat(hours) || 8;
-    const formattedDate = shiftDate.includes('-')
-      ? shiftDate.split('-').reverse().join('.')
-      : shiftDate;
-    onSubmitShift({
-      date: formattedDate,
-      type: shiftType,
-      hours: h,
-      amount: Math.round(h * hourlyRate),
-      status: 'На модерації',
-    });
+  const rate = user?.rate ?? 0;
+  const hours = calcHours(start, end, Number(breakMinutes) || 0);
+
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    const template = templates.find((t) => t.id === id);
+    if (!template) return;
+    setStart(template.start);
+    setEnd(template.end);
+    setBreakMinutes(String(template.breakMinutes));
+  };
+
+  const close = () => {
+    createShift.reset();
+    setNote('');
     onClose();
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const created = await createShift.mutate({
+      date: shiftDate,
+      start,
+      end,
+      breakMinutes: Number(breakMinutes) || 0,
+      templateId: templateId === CUSTOM ? undefined : templateId,
+      note,
+    });
+    if (created) close();
+  };
+
+  const options = [
+    ...templates.map((t) => ({
+      value: t.id,
+      label: `${t.name} (${t.start} - ${t.end}, перерва ${t.breakMinutes} хв) — ${formatHours(
+        calcHours(t.start, t.end, t.breakMinutes)
+      )}`,
+    })),
+    { value: CUSTOM, label: 'Інший час (вказати вручну)' },
+  ];
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true">
       <div className={styles.modal}>
-        <button
-          onClick={onClose}
-          className={styles.closeButton}
-          aria-label="Закрити модальне вікно"
-        >
+        <button onClick={close} className={styles.closeButton} aria-label="Закрити модальне вікно">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -68,7 +92,9 @@ export default function SubmitShiftModal({
           </div>
           <div className={styles.headerText}>
             <h3 className={styles.title}>Подати робочу зміну</h3>
-            <p className={styles.subtitle}>Coffee Corner • Центр (Ставка: 90 ₴ / год)</p>
+            <p className={styles.subtitle}>
+              {user?.venue} (Ставка: {rate} ₴ / год)
+            </p>
           </div>
         </div>
 
@@ -80,56 +106,96 @@ export default function SubmitShiftModal({
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Тип зміни та графік</label>
-            <CustomSelect
-              value={shiftType}
-              onChange={(val) => {
-                setShiftType(val);
-                if (val.includes('11.5')) setHours('11.5');
-                else if (val.includes('8.0')) setHours('8.0');
-                else if (val.includes('6.0')) setHours('6.0');
-              }}
-              options={[
-                {
-                  value: 'Денна зміна (08:00 - 20:00, перерва 30 хв)',
-                  label: 'Денна зміна (08:00 - 20:00, перерва 30 хв) — 11.5 год',
-                },
-                {
-                  value: 'Ранкова зміна (08:00 - 16:00, без перерви)',
-                  label: 'Ранкова зміна (08:00 - 16:00, без перерви) — 8.0 год',
-                },
-                {
-                  value: 'Вечірня зміна (16:00 - 22:00, без перерви)',
-                  label: 'Вечірня зміна (16:00 - 22:00, без перерви) — 6.0 год',
-                },
-              ]}
-            />
+            <CustomSelect value={templateId} onChange={applyTemplate} options={options} />
           </div>
 
           <div className={styles.gridTwo}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Кількість годин</label>
+              <label className={styles.label} htmlFor="shiftStart">
+                Початок
+              </label>
               <input
+                id="shiftStart"
+                type="time"
+                required
+                value={start}
+                onChange={(e) => {
+                  setStart(e.target.value);
+                  setTemplateId(CUSTOM);
+                }}
+                className={styles.input}
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shiftEnd">
+                Завершення
+              </label>
+              <input
+                id="shiftEnd"
+                type="time"
+                required
+                value={end}
+                onChange={(e) => {
+                  setEnd(e.target.value);
+                  setTemplateId(CUSTOM);
+                }}
+                className={styles.input}
+              />
+            </div>
+          </div>
+
+          <div className={styles.gridTwo}>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="shiftBreak">
+                Перерва, хв
+              </label>
+              <input
+                id="shiftBreak"
                 type="number"
-                step="0.5"
-                min="1"
-                max="24"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
+                step="5"
+                min="0"
+                max="180"
+                value={breakMinutes}
+                onChange={(e) => {
+                  setBreakMinutes(e.target.value);
+                  setTemplateId(CUSTOM);
+                }}
                 className={styles.input}
               />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>Орієнтовна виплата</label>
-              <div className={styles.estimateBox}>{(parseFloat(hours) || 0) * 90} ₴</div>
+              <div className={styles.estimateBox}>
+                {formatHours(hours)} • {formatUAH(Math.round(hours * rate))}
+              </div>
             </div>
           </div>
 
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="shiftNote">
+              Коментар для адміністратора
+            </label>
+            <input
+              id="shiftNote"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="наприклад, залишився на прибирання після закриття"
+              className={styles.input}
+            />
+          </div>
+
+          {createShift.error && (
+            <div className={page.formError} role="alert">
+              {createShift.error.message}
+            </div>
+          )}
+
           <div className={styles.actions}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
+            <button type="button" onClick={close} className={styles.cancelButton}>
               Скасувати
             </button>
-            <button type="submit" className={styles.submitButton}>
-              Відправити на модерацію
+            <button type="submit" className={styles.submitButton} disabled={createShift.isPending}>
+              {createShift.isPending ? 'Надсилаємо…' : 'Відправити на модерацію'}
             </button>
           </div>
         </form>

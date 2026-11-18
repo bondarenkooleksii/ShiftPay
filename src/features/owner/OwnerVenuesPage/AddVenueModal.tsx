@@ -2,32 +2,38 @@ import React, { useState } from 'react';
 import Modal from '@/shared/ui/Modal';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import { VENUE_TYPES } from '@/shared/constants/options';
+import { useCreateVenue } from '@/api/organization';
 import page from '@/shared/styles/page.module.css';
 
 interface AddVenueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (venue: { name: string; type: string; address: string }) => void;
 }
 
-export default function AddVenueModal({ isOpen, onClose, onCreate }: AddVenueModalProps) {
+export default function AddVenueModal({ isOpen, onClose }: AddVenueModalProps) {
+  const createVenue = useCreateVenue();
   const [name, setName] = useState('');
   const [type, setType] = useState(VENUE_TYPES[0]);
   const [address, setAddress] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const close = () => {
+    createVenue.reset();
+    onClose();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    onCreate({ name: name.trim(), type, address: address.trim() || 'м. Київ' });
+    const created = await createVenue.mutate({ name, type, address });
+    if (!created) return;
     setName('');
     setAddress('');
-    onClose();
+    close();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={close}
       title="Додати новий заклад"
       subtitle="Вкажіть базову інформацію про ваш бізнес"
       icon={
@@ -71,11 +77,17 @@ export default function AddVenueModal({ isOpen, onClose, onCreate }: AddVenueMod
           />
         </div>
 
+        {createVenue.error && (
+          <div className={page.formError} role="alert">
+            {createVenue.error.message}
+          </div>
+        )}
+
         <div className={page.formActions}>
-          <button type="button" onClick={onClose} className={page.ghostBtn}>
+          <button type="button" onClick={close} className={page.ghostBtn}>
             Скасувати
           </button>
-          <button type="submit" className={page.primaryBtn}>
+          <button type="submit" className={page.primaryBtn} disabled={createVenue.isPending}>
             Зберегти та почати
           </button>
         </div>

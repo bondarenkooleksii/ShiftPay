@@ -1,112 +1,79 @@
 import React, { useState } from 'react';
 import CustomDatePicker from '@/shared/ui/CustomDatePicker';
 import CustomSelect from '@/shared/ui/CustomSelect';
+import QueryState from '@/shared/ui/QueryState';
 import NotificationsPopover from '@/shared/layout/NotificationsPopover';
+import { useAuth } from '@/api/auth';
+import { useTeam } from '@/api/organization';
+import { useCreateShift, useDutyWorkers, useShifts, useUpdateShift } from '@/api/shifts';
+import { formatDate, formatHours, getInitials } from '@/shared/lib/format';
+import { calcHours, SHIFT_STATUS_LABEL, sumHours, todayIso } from '@/shared/lib/payroll';
+import type { ShiftStatus } from '@/types';
+import page from '@/shared/styles/page.module.css';
 import styles from './AdminShiftRegisterPage.module.css';
 
-export interface ShiftRecord {
-  id: string;
-  workerName: string;
-  role: string;
-  timeRange: string;
-  breakDuration: string;
-  hours: string;
-  note: string;
-  status: 'Підтверджено' | 'Очікує перевірки';
-}
+const BREAK_OPTIONS = [
+  { value: '0', label: '0 хв (без перерви)' },
+  { value: '30', label: '30 хв (обід)' },
+  { value: '45', label: '45 хв (обід + кава)' },
+  { value: '60', label: '60 хв (1 год перерва)' },
+];
+
+const isWaiting = (status: ShiftStatus) => status === 'pending' || status === 'clarify';
+
+const formatDayLabel = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('uk-UA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    weekday: 'long',
+  });
 
 export default function AdminShiftRegisterPage() {
-  const [filterTab, setFilterTab] = useState<'all' | 'pending'>('all');
+  const { user } = useAuth();
+  const shiftsQuery = useShifts();
+  const { data: team = [] } = useTeam();
+  const { data: duty = [] } = useDutyWorkers();
+  const createShift = useCreateShift();
+  const updateShift = useUpdateShift();
 
-  const [formDate, setFormDate] = useState('2026-09-24');
-  const [worker, setWorker] = useState('Бондаренко Олексій (Бариста)');
+  const [filterTab, setFilterTab] = useState<'all' | 'pending'>('all');
+  const [formDate, setFormDate] = useState<string | null>(null);
+  const [workerId, setWorkerId] = useState('');
   const [startTime, setStartTime] = useState('08:00');
   const [endTime, setEndTime] = useState('20:00');
-  const [breakOption, setBreakOption] = useState('30 хв (обід)');
+  const [breakMinutes, setBreakMinutes] = useState('30');
   const [comment, setComment] = useState('');
   const [showSavedToast, setShowSavedToast] = useState(false);
 
-  const [shifts, setShifts] = useState<ShiftRecord[]>([
-    {
-      id: 'shift-adm-1',
-      workerName: 'Шевченко Л.',
-      role: 'Бариста',
-      timeRange: '08:00 - 16:00',
-      breakDuration: '0 хв',
-      hours: '8.0 год',
-      note: 'Вчасно',
-      status: 'Підтверджено',
-    },
-    {
-      id: 'shift-adm-2',
-      workerName: 'Бондаренко О.',
-      role: 'Бариста',
-      timeRange: '08:00 - 20:00',
-      breakDuration: '30 хв',
-      hours: '11.5 год',
-      note: 'Попередня заявка підтверджена',
-      status: 'Підтверджено',
-    },
-    {
-      id: 'shift-adm-3',
-      workerName: 'Коваленко Д.',
-      role: 'Помічник бариста',
-      timeRange: '12:00 - 20:30',
-      breakDuration: '30 хв',
-      hours: '8.0 год',
-      note: 'Вийшов на вечірнє посилення / прибирання',
-      status: 'Очікує перевірки',
-    },
-  ]);
+  const allShifts = shiftsQuery.data ?? [];
+  const date = formDate ?? allShifts[0]?.date ?? todayIso();
+  const activeTeam = team.filter((m) => m.active);
+  const selectedWorker = workerId || activeTeam[0]?.id || '';
 
-  const calculateTotalHours = () => {
-    try {
-      const [sh, sm] = startTime.split(':').map(Number);
-      const [eh, em] = endTime.split(':').map(Number);
-      let diffMinutes = eh * 60 + em - (sh * 60 + sm);
-      if (diffMinutes < 0) diffMinutes += 24 * 60;
-      if (breakOption.includes('30')) {
-        diffMinutes = Math.max(0, diffMinutes - 30);
-      } else if (breakOption.includes('60') || breakOption.includes('1 год')) {
-        diffMinutes = Math.max(0, diffMinutes - 60);
-      }
-      return (diffMinutes / 60).toFixed(1);
-    } catch {
-      return '11.5';
-    }
-  };
+  const dayShifts = allShifts.filter((s) => s.date === date && s.status !== 'rejected');
+  const filteredShifts = dayShifts.filter((s) => filterTab === 'all' || isWaiting(s.status));
+  const pendingCount = dayShifts.filter((s) => isWaiting(s.status)).length;
+  const onDuty = duty.filter((d) => d.status !== 'finished').length;
+  const totalHours = calcHours(startTime, endTime, Number(breakMinutes));
 
-  const handleConfirmShift = (id: string) => {
-    setShifts((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: 'Підтверджено' as const } : s))
-    );
-  };
+  const handleConfirmShift = (id: string) => updateShift.mutate({ id, status: 'confirmed' });
 
-  const handleSubmitNewShift = (e: React.FormEvent) => {
+  const handleSubmitNewShift = async (e: React.FormEvent) => {
     e.preventDefault();
-    const calculatedHours = `${calculateTotalHours()} год`;
-    const newRecord: ShiftRecord = {
-      id: `shift-adm-${Date.now()}`,
-      workerName: worker.split(' ')[0] + ' ' + (worker.split(' ')[1]?.[0] || '') + '.',
-      role: worker.includes('Бариста') ? 'Бариста' : 'Офіціант',
-      timeRange: `${startTime} - ${endTime}`,
-      breakDuration: breakOption.split(' ')[0] + ' хв',
-      hours: calculatedHours,
+    const created = await createShift.mutate({
+      workerId: selectedWorker,
+      date,
+      start: startTime,
+      end: endTime,
+      breakMinutes: Number(breakMinutes),
       note: comment.trim() || 'Внесено адміністратором',
-      status: 'Підтверджено',
-    };
-    setShifts((prev) => [newRecord, ...prev]);
+    });
+    if (!created) return;
     setComment('');
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), 2500);
   };
-
-  const filteredShifts = shifts.filter((s) => {
-    if (filterTab === 'pending') return s.status === 'Очікує перевірки';
-    return true;
-  });
-
-  const pendingCount = shifts.filter((s) => s.status === 'Очікує перевірки').length;
 
   return (
     <div className={styles.container}>
@@ -115,7 +82,7 @@ export default function AdminShiftRegisterPage() {
           <h1 className={styles.headerTitle}>Журнал робочих змін</h1>
           <div className={styles.venueBadge}>
             <span className={styles.pulseDot} />
-            <span>Coffee Corner • Центр</span>
+            <span>{user?.venue}</span>
           </div>
         </div>
 
@@ -128,14 +95,14 @@ export default function AdminShiftRegisterPage() {
                 d="M6.75 3v2.25M17.25 3v2.253M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
               />
             </svg>
-            <span>24 вересня 2026, Четвер</span>
+            <span>{formatDayLabel(date)}</span>
           </div>
 
           <NotificationsPopover />
 
           <div className={styles.activeShiftPill}>
             <span className={styles.pulseDot} />
-            <span>Зміна активна • 3 на зміні</span>
+            <span>Зміна активна • {onDuty} на зміні</span>
           </div>
         </div>
       </header>
@@ -153,7 +120,7 @@ export default function AdminShiftRegisterPage() {
                 <label className={styles.formLabel}>
                   Дата <span className={styles.requiredAsterisk}>*</span>
                 </label>
-                <CustomDatePicker value={formDate} onChange={setFormDate} />
+                <CustomDatePicker value={date} onChange={setFormDate} />
               </div>
 
               <div className={styles.formGroup}>
@@ -161,14 +128,10 @@ export default function AdminShiftRegisterPage() {
                   Працівник <span className={styles.requiredAsterisk}>*</span>
                 </label>
                 <CustomSelect
-                  value={worker}
-                  onChange={setWorker}
-                  options={[
-                    'Бондаренко Олексій (Бариста)',
-                    'Шевченко Лілія (Бариста)',
-                    'Коваленко Дмитро (Помічник бариста)',
-                    'Мельник Анна (Касир)',
-                  ]}
+                  value={selectedWorker}
+                  onChange={setWorkerId}
+                  options={activeTeam.map((m) => ({ value: m.id, label: `${m.name} (${m.role})` }))}
+                  ariaLabel="Працівник"
                 />
               </div>
 
@@ -196,14 +159,9 @@ export default function AdminShiftRegisterPage() {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Перерва</label>
                 <CustomSelect
-                  value={breakOption}
-                  onChange={setBreakOption}
-                  options={[
-                    '0 хв (без перерви)',
-                    '30 хв (обід)',
-                    '45 хв (обід + кава)',
-                    '60 хв (1 год перерва)',
-                  ]}
+                  value={breakMinutes}
+                  onChange={setBreakMinutes}
+                  options={BREAK_OPTIONS}
                 />
               </div>
 
@@ -218,7 +176,7 @@ export default function AdminShiftRegisterPage() {
                   </svg>
                   <span>Всього зараховано:</span>
                 </div>
-                <span className={styles.totalHoursValue}>{calculateTotalHours()} год</span>
+                <span className={styles.totalHoursValue}>{formatHours(totalHours)}</span>
               </div>
 
               <div className={styles.formGroup}>
@@ -232,6 +190,12 @@ export default function AdminShiftRegisterPage() {
                 />
               </div>
 
+              {createShift.error && (
+                <div className={page.formError} role="alert">
+                  {createShift.error.message}
+                </div>
+              )}
+
               {showSavedToast && (
                 <div className={styles.savedToast}>
                   <span className={styles.toastCheck}>✓</span>
@@ -239,7 +203,11 @@ export default function AdminShiftRegisterPage() {
                 </div>
               )}
 
-              <button type="submit" className={styles.saveShiftButton}>
+              <button
+                type="submit"
+                className={styles.saveShiftButton}
+                disabled={createShift.isPending || !selectedWorker}
+              >
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -263,8 +231,10 @@ export default function AdminShiftRegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <span className={styles.statLabel}>Працівників сьогодні</span>
-                  <span className={styles.statValue}>3</span>
+                  <span className={styles.statLabel}>Працівників за день</span>
+                  <span className={styles.statValue}>
+                    {new Set(dayShifts.map((s) => s.workerId)).size}
+                  </span>
                 </div>
               </div>
               <span className={styles.statBadgeSuccess}>На зміні</span>
@@ -282,8 +252,10 @@ export default function AdminShiftRegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <span className={styles.statLabel}>Зараховано годин сьогодні</span>
-                  <span className={styles.statValue}>27.5 год</span>
+                  <span className={styles.statLabel}>Зараховано годин за день</span>
+                  <span className={styles.statValue}>
+                    {formatHours(sumHours(dayShifts.filter((s) => !isWaiting(s.status))))}
+                  </span>
                 </div>
               </div>
               <span className={styles.statBadgeSky}>Сумарний час</span>
@@ -293,7 +265,7 @@ export default function AdminShiftRegisterPage() {
           <div className={styles.tableSection}>
             <div className={styles.tableHeaderRow}>
               <div>
-                <h3 className={styles.tableSectionTitle}>Журнал змін за сьогодні</h3>
+                <h3 className={styles.tableSectionTitle}>Журнал змін за {formatDate(date)}</h3>
                 <p className={styles.tableSectionSubtitle}>
                   Операційний контроль відпрацьованого часу персоналу
                 </p>
@@ -307,7 +279,7 @@ export default function AdminShiftRegisterPage() {
                   }}
                   className={`${styles.filterBtn} ${filterTab === 'all' ? styles.filterBtnActive : ''}`}
                 >
-                  Всі ({shifts.length})
+                  Всі ({dayShifts.length})
                 </button>
                 <button
                   type="button"
@@ -321,6 +293,12 @@ export default function AdminShiftRegisterPage() {
                 </button>
               </div>
             </div>
+
+            <QueryState
+              isLoading={shiftsQuery.isLoading}
+              error={shiftsQuery.error ?? updateShift.error}
+              onRetry={shiftsQuery.refetch}
+            />
 
             <div className={styles.tableContainer}>
               <table className={styles.table}>
@@ -339,7 +317,7 @@ export default function AdminShiftRegisterPage() {
                     <tr key={row.id}>
                       <td>
                         <div className={styles.workerCell}>
-                          <div className={styles.workerAvatar}>{row.workerName.slice(0, 2)}</div>
+                          <div className={styles.workerAvatar}>{getInitials(row.workerName)}</div>
                           <div>
                             <span className={styles.workerName}>{row.workerName}</span>
                             <span className={styles.workerRole}>{row.role}</span>
@@ -347,30 +325,33 @@ export default function AdminShiftRegisterPage() {
                         </div>
                       </td>
 
-                      <td className={styles.timeRange}>{row.timeRange}</td>
-                      <td className={styles.breakDuration}>{row.breakDuration}</td>
-                      <td className={styles.hoursValue}>{row.hours}</td>
+                      <td className={styles.timeRange}>
+                        {row.start} - {row.end}
+                      </td>
+                      <td className={styles.breakDuration}>{row.breakMinutes} хв</td>
+                      <td className={styles.hoursValue}>{formatHours(row.hours)}</td>
                       <td>
                         <span className={styles.noteBadge} title={row.note}>
-                          {row.note}
+                          {row.note ?? (row.source === 'admin' ? 'Внесено адміністратором' : '—')}
                         </span>
                       </td>
 
                       <td className={styles.textRight}>
-                        {row.status === 'Підтверджено' ? (
+                        {!isWaiting(row.status) ? (
                           <span className={styles.statusConfirmed}>
                             <span className={styles.statusDotConfirmed} />
-                            <span>Підтверджено</span>
+                            <span>{SHIFT_STATUS_LABEL[row.status]}</span>
                           </span>
                         ) : (
                           <div className={styles.pendingActionGroup}>
                             <span className={styles.statusWaiting}>
                               <span className={styles.statusDotWaiting} />
-                              <span>Очікує</span>
+                              <span>{SHIFT_STATUS_LABEL[row.status]}</span>
                             </span>
                             <button
                               type="button"
                               onClick={() => handleConfirmShift(row.id)}
+                              disabled={updateShift.isPending}
                               className={styles.confirmShiftBtn}
                             >
                               <span>✓</span>
@@ -383,6 +364,9 @@ export default function AdminShiftRegisterPage() {
                   ))}
                 </tbody>
               </table>
+              {shiftsQuery.data && filteredShifts.length === 0 && (
+                <div className={page.emptyState}>За цей день змін ще немає</div>
+              )}
             </div>
           </div>
         </section>

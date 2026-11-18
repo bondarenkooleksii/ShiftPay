@@ -1,6 +1,6 @@
 import type { TeamMember } from '@/types';
 
-export const initialTeam: TeamMember[] = [
+export const seedTeam: TeamMember[] = [
   {
     id: 't1',
     name: 'Бондаренко Олексій',
@@ -45,5 +45,14 @@ export const initialTeam: TeamMember[] = [
     rate: 80,
     active: false,
     phone: '+380 66 909 80 70',
+  },
+  {
+    id: 't6',
+    name: 'Ткаченко Марія',
+    role: 'Бариста',
+    venue: 'Coffee Corner • Центр',
+    rate: 85,
+    active: true,
+    phone: '+380 93 444 55 66',
   },
 ];

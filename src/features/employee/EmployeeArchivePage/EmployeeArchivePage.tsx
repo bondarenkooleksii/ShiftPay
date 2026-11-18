@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
-import { payslips } from '@/mocks/payslips';
+import QueryState from '@/shared/ui/QueryState';
+import { usePayslips } from '@/api/payroll';
 import type { Payslip } from '@/types';
 import page from '@/shared/styles/page.module.css';
-import { formatUAH, payslipNet } from '@/shared/lib/format';
+import { formatHours, formatUAH, payslipNet } from '@/shared/lib/format';
 import PayslipModal from './PayslipModal';
 
 const ALL_YEARS = 'Усі роки';
@@ -15,6 +16,9 @@ export default function EmployeeArchivePage() {
   const [month, setMonth] = useState(ALL_MONTHS);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Payslip | null>(null);
+
+  const payslipsQuery = usePayslips();
+  const payslips = payslipsQuery.data ?? [];
 
   const years = [ALL_YEARS, ...new Set(payslips.map((p) => p.year))];
   const months = [ALL_MONTHS, ...new Set(payslips.map((p) => p.month))];
@@ -48,7 +52,7 @@ export default function EmployeeArchivePage() {
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Відпрацьовано годин</span>
               <span className={page.kpiValue}>
-                {filtered.reduce((sum, p) => sum + p.hours, 0)} год
+                {formatHours(filtered.reduce((sum, p) => sum + p.hours, 0))}
               </span>
             </div>
           </div>
@@ -110,7 +114,7 @@ export default function EmployeeArchivePage() {
                     <td className={`${page.mono} ${page.strong}`}>{p.receipt}</td>
                     <td className={page.mono}>{p.paidOn}</td>
                     <td className={page.muted}>{p.period}</td>
-                    <td className={page.mono}>{p.hours} год</td>
+                    <td className={page.mono}>{formatHours(p.hours)}</td>
                     <td className={`${page.mono} ${page.strong}`}>{formatUAH(payslipNet(p))}</td>
                     <td className={page.textRight}>
                       <button type="button" className={page.linkBtn} onClick={() => setSelected(p)}>
@@ -121,7 +125,12 @@ export default function EmployeeArchivePage() {
                 ))}
               </tbody>
             </table>
-            {filtered.length === 0 && (
+            <QueryState
+              isLoading={payslipsQuery.isLoading}
+              error={payslipsQuery.error}
+              onRetry={payslipsQuery.refetch}
+            />
+            {payslipsQuery.data && filtered.length === 0 && (
               <div className={page.emptyState}>Чеків за цими фільтрами не знайдено</div>
             )}
           </div>

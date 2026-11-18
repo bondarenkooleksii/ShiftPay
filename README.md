@@ -18,13 +18,21 @@ ShiftPay — сучасний веб-додаток для обліку робо
 
    Додаток буде доступний за адресою [http://localhost:5173/](http://localhost:5173/).
 
-3. **Збірка для продакшну**:
+3. **Запуск бекенду (Express API)**:
+
+   ```bash
+   npm run server
+   ```
+
+   API буде доступне за адресою `http://localhost:4000/api`. Щоб фронтенд звертався до нього, створіть файл `.env` за зразком `.env.example` (`VITE_API_URL=http://localhost:4000/api`). Без `VITE_API_URL` працює вбудований мок-сервер MSW.
+
+4. **Збірка для продакшну**:
 
    ```bash
    npm run build
    ```
 
-4. **Попередній перегляд збірки**:
+5. **Попередній перегляд збірки**:
    ```bash
    npm run preview
    ```
@@ -53,6 +61,7 @@ ShiftPay — сучасний веб-додаток для обліку робо
 - **Vite 8**
 - **Tailwind CSS v4** (`@tailwindcss/vite`)
 - **TypeScript**
+- **Node.js + Express 5** (REST API, JWT-авторизація, bcrypt)
 
 ## 📱 Ролі та функціонал
 

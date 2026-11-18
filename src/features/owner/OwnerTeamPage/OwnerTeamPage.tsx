@@ -3,21 +3,21 @@ import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import Modal from '@/shared/ui/Modal';
 import ConfirmDialog from '@/shared/ui/ConfirmDialog';
-import { initialTeam } from '@/mocks/team';
+import QueryState from '@/shared/ui/QueryState';
+import { useTeam, useUpdateMember, useVenues } from '@/api/organization';
 import { STAFF_ROLES } from '@/shared/constants/options';
 import { getInitials } from '@/shared/lib/format';
-import type { TeamMember, Venue } from '@/types';
+import type { TeamMember } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import InviteModal from './InviteModal';
 
-interface OwnerTeamPageProps {
-  venues: Venue[];
-}
-
 const ALL_ROLES = 'Усі ролі';
 
-export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
-  const [team, setTeam] = useState<TeamMember[]>(initialTeam);
+export default function OwnerTeamPage() {
+  const teamQuery = useTeam();
+  const { data: venues = [] } = useVenues();
+  const updateMember = useUpdateMember();
+  const team = teamQuery.data ?? [];
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState(ALL_ROLES);
 
@@ -33,10 +33,12 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
   );
 
   const activeCount = team.filter((m) => m.active).length;
-  const avgRate = Math.round(team.reduce((sum, m) => sum + m.rate, 0) / team.length);
+  const avgRate = team.length
+    ? Math.round(team.reduce((sum, m) => sum + m.rate, 0) / team.length)
+    : 0;
 
-  const toggleActive = (id: string) =>
-    setTeam((prev) => prev.map((m) => (m.id === id ? { ...m, active: !m.active } : m)));
+  const toggleActive = (member: TeamMember) =>
+    updateMember.mutate({ id: member.id, active: !member.active });
 
   return (
     <div className={page.page}>
@@ -72,6 +74,12 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
               <span className={page.kpiHint}>по всій мережі</span>
             </div>
           </div>
+
+          <QueryState
+            isLoading={teamQuery.isLoading}
+            error={teamQuery.error}
+            onRetry={teamQuery.refetch}
+          />
 
           <div className={page.toolbar}>
             <div>
@@ -175,7 +183,7 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
                           <button
                             type="button"
                             className={page.linkBtn}
-                            onClick={() => toggleActive(m.id)}
+                            onClick={() => toggleActive(m)}
                           >
                             Активувати
                           </button>
@@ -207,10 +215,10 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
           className={page.form}
           onSubmit={(e) => {
             e.preventDefault();
-            const rate = Number(editRate);
-            if (!editing || !rate) return;
-            setTeam((prev) => prev.map((m) => (m.id === editing.id ? { ...m, rate } : m)));
-            setEditing(null);
+            if (!editing) return;
+            updateMember.mutate({ id: editing.id, rate: Number(editRate) }).then((saved) => {
+              if (saved) setEditing(null);
+            });
           }}
         >
           <div className={page.formGroup}>
@@ -225,7 +233,12 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
               onChange={(e) => setEditRate(e.target.value)}
               className={page.input}
             />
-            <span className={page.hint}>Поточна ставка: {editing?.rate} ₴/год</span>
+            <span className={page.hint}>
+              Поточна ставка: {editing?.rate} ₴/год. Нова ставка діятиме для нових змін.
+            </span>
+            {updateMember.error && (
+              <span className={page.errorText}>{updateMember.error.message}</span>
+            )}
           </div>
           <div className={page.formActions}>
             <button type="button" className={page.ghostBtn} onClick={() => setEditing(null)}>
@@ -245,7 +258,7 @@ export default function OwnerTeamPage({ venues }: OwnerTeamPageProps) {
         confirmLabel="Деактивувати"
         onCancel={() => setDeactivating(null)}
         onConfirm={() => {
-          if (deactivating) toggleActive(deactivating.id);
+          if (deactivating) toggleActive(deactivating);
           setDeactivating(null);
         }}
       />

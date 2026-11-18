@@ -4,6 +4,7 @@ import Modal from '@/shared/ui/Modal';
 import FakeQrCode from '@/shared/ui/FakeQrCode';
 import { STAFF_ROLES } from '@/shared/constants/options';
 import type { Venue } from '@/types';
+import { useInviteMember } from '@/api/organization';
 import page from '@/shared/styles/page.module.css';
 import styles from './InviteModal.module.css';
 
@@ -16,7 +17,9 @@ interface InviteModalProps {
 export default function InviteModal({ isOpen, onClose, venues }: InviteModalProps) {
   const [name, setName] = useState('');
   const [role, setRole] = useState(STAFF_ROLES[0]);
-  const [venue, setVenue] = useState(venues[0]?.name ?? '');
+  const [venueDraft, setVenue] = useState('');
+  const venue = venueDraft || venues[0]?.name || '';
+  const invite = useInviteMember();
   const [rate, setRate] = useState('90');
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -25,23 +28,19 @@ export default function InviteModal({ isOpen, onClose, venues }: InviteModalProp
     setLink(null);
     setCopied(false);
     setName('');
+    invite.reset();
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    const code = Math.random().toString(36).slice(2, 10).toUpperCase();
-    setLink(`https://shiftpay.app/invite/${code}`);
+    const result = await invite.mutate({ name, role, venue, rate: Number(rate), phone: '' });
+    if (result) setLink(result.inviteLink);
   };
 
   const handleCopy = async () => {
     if (!link) return;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      // Clipboard can be blocked (e.g. insecure context); the link stays visible to copy manually.
-    }
+    await navigator.clipboard.writeText(link).catch(() => undefined);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -124,11 +123,16 @@ export default function InviteModal({ isOpen, onClose, venues }: InviteModalProp
             <label className={page.label}>Заклад</label>
             <CustomSelect value={venue} onChange={setVenue} options={venues.map((v) => v.name)} />
           </div>
+          {invite.error && (
+            <div className={page.formError} role="alert">
+              {invite.error.message}
+            </div>
+          )}
           <div className={page.formActions}>
             <button type="button" className={page.ghostBtn} onClick={close}>
               Скасувати
             </button>
-            <button type="submit" className={page.primaryBtn}>
+            <button type="submit" className={page.primaryBtn} disabled={invite.isPending}>
               Згенерувати запрошення
             </button>
           </div>

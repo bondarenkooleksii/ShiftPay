@@ -72,7 +72,7 @@ export default function CustomDatePicker({
   const selectedDate = value ? parseDate(value) : null;
 
   const [viewYear, setViewYear] = useState(selectedDate ? selectedDate.getFullYear() : 2026);
-  const [viewMonth, setViewMonth] = useState(selectedDate ? selectedDate.getMonth() : 8); // 8 = September
+  const [viewMonth, setViewMonth] = useState(selectedDate ? selectedDate.getMonth() : 8);
 
   useEffect(() => {
     if (value) {

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import ConfirmDialog from '@/shared/ui/ConfirmDialog';
-import { initialDutyWorkers } from '@/mocks/workers';
+import QueryState from '@/shared/ui/QueryState';
+import { useAuth } from '@/api/auth';
+import { useDutyWorkers, useUpdateDuty } from '@/api/shifts';
+import { getInitials } from '@/shared/lib/format';
 import type { DutyStatus, DutyWorker } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import styles from './AdminWorkersPage.module.css';
-
 const STATUS_META: Record<DutyStatus, { label: string; badge: string }> = {
   active: { label: 'На зміні', badge: page.badgeSuccess },
   break: { label: 'На перерві (30 хв)', badge: page.badgeWarning },
@@ -14,24 +16,23 @@ const STATUS_META: Record<DutyStatus, { label: string; badge: string }> = {
 
 const formatElapsed = (minutes: number) => `${Math.floor(minutes / 60)} год ${minutes % 60} хв`;
 
+const elapsedMinutes = (w: DutyWorker, now: number) =>
+  w.workedMinutes ?? Math.max(0, Math.round((now - Date.parse(w.startedAt)) / 60_000));
+
 export default function AdminWorkersPage() {
-  const [workers, setWorkers] = useState<DutyWorker[]>(initialDutyWorkers);
+  const { user } = useAuth();
+  const dutyQuery = useDutyWorkers();
+  const updateDuty = useUpdateDuty();
+  const [now, setNow] = useState(() => Date.now());
   const [clockingOut, setClockingOut] = useState<DutyWorker | null>(null);
   const [adjustedHours, setAdjustedHours] = useState('');
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setWorkers((prev) =>
-        prev.map((w) =>
-          w.status === 'active' ? { ...w, startedMinutesAgo: w.startedMinutesAgo + 1 } : w
-        )
-      );
-    }, 60_000);
+    const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  const update = (id: string, patch: Partial<DutyWorker>) =>
-    setWorkers((prev) => prev.map((w) => (w.id === id ? { ...w, ...patch } : w)));
+  const workers = dutyQuery.data ?? [];
 
   const counts = {
     active: workers.filter((w) => w.status === 'active').length,
@@ -39,12 +40,19 @@ export default function AdminWorkersPage() {
     finished: workers.filter((w) => w.status === 'finished').length,
   };
 
+  const today = new Date(now).toLocaleDateString('uk-UA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    weekday: 'long',
+  });
+
   return (
     <div className={page.page}>
       <PageHeader
         title="Працівники на зміні"
-        crumbs={['Coffee Corner • Центр', 'Відвідуваність']}
-        right={<span className={`${page.badge} ${page.badgeInfo}`}>24 вересня 2026, Четвер</span>}
+        crumbs={[user?.venue ?? 'Заклад', 'Відвідуваність']}
+        right={<span className={`${page.badge} ${page.badgeInfo}`}>{today}</span>}
       />
 
       <div className={page.content}>
@@ -69,6 +77,12 @@ export default function AdminWorkersPage() {
             <p className={page.sectionSubtitle}>Відвідуваність персоналу в реальному часі</p>
           </div>
 
+          <QueryState
+            isLoading={dutyQuery.isLoading}
+            error={dutyQuery.error ?? updateDuty.error}
+            onRetry={dutyQuery.refetch}
+          />
+
           <div className={styles.grid}>
             {workers.map((w) => {
               const meta = STATUS_META[w.status];
@@ -76,12 +90,7 @@ export default function AdminWorkersPage() {
                 <article key={w.id} className={`${page.card} ${styles.workerCard}`}>
                   <div className={styles.cardTop}>
                     <div className={page.personCell}>
-                      <div className={page.avatar}>
-                        {w.name
-                          .split(' ')
-                          .map((p) => p[0])
-                          .join('')}
-                      </div>
+                      <div className={page.avatar}>{getInitials(w.name)}</div>
                       <div>
                         <span className={page.personName}>{w.name}</span>
                         <span className={page.personSub}>{w.role}</span>
@@ -101,7 +110,7 @@ export default function AdminWorkersPage() {
                     <div>
                       <span className={page.kpiLabel}>Відпрацьовано</span>
                       <span className={styles.timerValue}>
-                        {formatElapsed(w.startedMinutesAgo)}
+                        {formatElapsed(elapsedMinutes(w, now))}
                       </span>
                     </div>
                   </div>
@@ -111,8 +120,12 @@ export default function AdminWorkersPage() {
                       <button
                         type="button"
                         className={`${page.secondaryBtn} ${page.smallBtn}`}
+                        disabled={updateDuty.isPending}
                         onClick={() =>
-                          update(w.id, { status: w.status === 'break' ? 'active' : 'break' })
+                          updateDuty.mutate({
+                            id: w.id,
+                            status: w.status === 'break' ? 'active' : 'break',
+                          })
                         }
                       >
                         {w.status === 'break' ? 'Повернути з перерви' : 'Відправити на перерву'}
@@ -122,7 +135,7 @@ export default function AdminWorkersPage() {
                         className={page.linkBtnDanger}
                         onClick={() => {
                           setClockingOut(w);
-                          setAdjustedHours((w.startedMinutesAgo / 60).toFixed(1));
+                          setAdjustedHours((elapsedMinutes(w, now) / 60).toFixed(1));
                         }}
                       >
                         Завершити раніше
@@ -139,13 +152,14 @@ export default function AdminWorkersPage() {
       <ConfirmDialog
         isOpen={clockingOut !== null}
         title="Завершити зміну раніше?"
-        message={`Зміну працівника ${clockingOut?.name ?? ''} буде закрито зараз. За потреби скоригуйте кількість зарахованих годин.`}
+        message={`Зміну працівника ${clockingOut?.name ?? ''} буде закрито зараз і автоматично внесено в журнал як підтверджену. За потреби скоригуйте кількість зарахованих годин.`}
         confirmLabel="Завершити зміну"
         onCancel={() => setClockingOut(null)}
         onConfirm={() => {
           if (clockingOut) {
-            const minutes = Math.round(Number(adjustedHours) * 60) || clockingOut.startedMinutesAgo;
-            update(clockingOut.id, { status: 'finished', startedMinutesAgo: minutes });
+            const minutes =
+              Math.round(Number(adjustedHours) * 60) || elapsedMinutes(clockingOut, now);
+            updateDuty.mutate({ id: clockingOut.id, status: 'finished', workedMinutes: minutes });
           }
           setClockingOut(null);
         }}

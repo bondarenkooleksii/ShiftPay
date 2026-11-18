@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import ConfirmDialog from '@/shared/ui/ConfirmDialog';
-import { initialTemplates } from '@/mocks/shifts';
+import QueryState from '@/shared/ui/QueryState';
+import { useAuth } from '@/api/auth';
+import { useCreateTemplate, useDeleteTemplate, useTemplates } from '@/api/organization';
+import { useAdminSettings, useSaveAdminSettings } from '@/api/settings';
 import type { ShiftTemplate } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import styles from './AdminSettingsPage.module.css';
@@ -10,7 +13,13 @@ import styles from './AdminSettingsPage.module.css';
 const BREAK_OPTIONS = ['0 хв', '15 хв', '30 хв', '45 хв', '60 хв'];
 
 export default function AdminSettingsPage() {
-  const [templates, setTemplates] = useState<ShiftTemplate[]>(initialTemplates);
+  const { user } = useAuth();
+  const templatesQuery = useTemplates();
+  const createTemplate = useCreateTemplate();
+  const deleteTemplate = useDeleteTemplate();
+  const adminSettings = useAdminSettings();
+  const saveSettings = useSaveAdminSettings();
+  const templates = templatesQuery.data ?? [];
   const [isAdding, setIsAdding] = useState(false);
   const [name, setName] = useState('');
   const [start, setStart] = useState('09:00');
@@ -18,29 +27,34 @@ export default function AdminSettingsPage() {
   const [breakOpt, setBreakOpt] = useState(BREAK_OPTIONS[2]);
   const [removing, setRemoving] = useState<ShiftTemplate | null>(null);
 
-  const [grace, setGrace] = useState(10);
+  const [graceDraft, setGrace] = useState<number | null>(null);
+  const grace = graceDraft ?? adminSettings.data?.graceMinutes ?? 10;
   const [saved, setSaved] = useState(false);
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    setTemplates((prev) => [
-      ...prev,
-      {
-        id: `tpl-${Date.now()}`,
-        name: name.trim(),
-        start,
-        end,
-        breakMinutes: parseInt(breakOpt, 10),
-      },
-    ]);
+    const created = await createTemplate.mutate({
+      name: name.trim(),
+      start,
+      end,
+      breakMinutes: parseInt(breakOpt, 10),
+    });
+    if (!created) return;
     setName('');
     setIsAdding(false);
   };
 
+  const handleSaveRules = async () => {
+    const result = await saveSettings.mutate({ graceMinutes: grace });
+    if (!result) return;
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
   return (
     <div className={page.page}>
-      <PageHeader title="Налаштування зміни" crumbs={['Coffee Corner • Центр', 'Налаштування']} />
+      <PageHeader title="Налаштування зміни" crumbs={[user?.venue ?? 'Заклад', 'Налаштування']} />
 
       <div className={page.content}>
         <div className={page.inner} style={{ maxWidth: 880 }}>
@@ -60,6 +74,12 @@ export default function AdminSettingsPage() {
                 </button>
               )}
             </div>
+
+            <QueryState
+              isLoading={templatesQuery.isLoading}
+              error={templatesQuery.error ?? deleteTemplate.error}
+              onRetry={templatesQuery.refetch}
+            />
 
             <div className={styles.templateList}>
               {templates.map((t) => (
@@ -136,6 +156,11 @@ export default function AdminSettingsPage() {
                     <CustomSelect value={breakOpt} onChange={setBreakOpt} options={BREAK_OPTIONS} />
                   </div>
                 </div>
+                {createTemplate.error && (
+                  <div className={page.formError} role="alert">
+                    {createTemplate.error.message}
+                  </div>
+                )}
                 <div className={page.formActions}>
                   <button
                     type="button"
@@ -144,7 +169,11 @@ export default function AdminSettingsPage() {
                   >
                     Скасувати
                   </button>
-                  <button type="submit" className={page.primaryBtn}>
+                  <button
+                    type="submit"
+                    className={page.primaryBtn}
+                    disabled={createTemplate.isPending}
+                  >
                     Додати шаблон
                   </button>
                 </div>
@@ -183,14 +212,15 @@ export default function AdminSettingsPage() {
               </div>
             </div>
             <div className={page.formActions} style={{ marginTop: 16 }}>
+              {saveSettings.error && (
+                <span className={page.errorText}>{saveSettings.error.message}</span>
+              )}
               {saved && <span className={page.inlineSuccess}>✓ Правила збережено</span>}
               <button
                 type="button"
                 className={page.primaryBtn}
-                onClick={() => {
-                  setSaved(true);
-                  setTimeout(() => setSaved(false), 2500);
-                }}
+                disabled={saveSettings.isPending}
+                onClick={handleSaveRules}
               >
                 Зберегти
               </button>
@@ -206,7 +236,7 @@ export default function AdminSettingsPage() {
         confirmLabel="Видалити"
         onCancel={() => setRemoving(null)}
         onConfirm={() => {
-          if (removing) setTemplates((prev) => prev.filter((t) => t.id !== removing.id));
+          if (removing) deleteTemplate.mutate(removing.id);
           setRemoving(null);
         }}
       />

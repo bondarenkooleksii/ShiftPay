@@ -3,13 +3,15 @@ import PageHeader from '@/shared/layout/PageHeader';
 import CustomSelect from '@/shared/ui/CustomSelect';
 import { ANALYTICS_PERIODS } from '@/shared/constants/options';
 import { formatUAH } from '@/shared/lib/format';
-import { peakHours, venueLaborCost, weeklyHours } from '@/mocks/analytics';
+import QueryState from '@/shared/ui/QueryState';
+import { useAnalytics } from '@/api/payroll';
+import type { Analytics } from '@/types';
 import page from '@/shared/styles/page.module.css';
 import styles from './OwnerAnalyticsPage.module.css';
 
 const MONTHLY_BUDGET = 60000;
 
-function exportCsv(period: string) {
+function exportCsv(period: string, { venueLaborCost, weeklyHours }: Analytics) {
   const rows = [
     ['Заклад', 'Витрати на персонал, грн'],
     ...venueLaborCost.map((v) => [v.venue, String(v.amount)]),
@@ -30,10 +32,16 @@ function exportCsv(period: string) {
 
 export default function OwnerAnalyticsPage() {
   const [period, setPeriod] = useState(ANALYTICS_PERIODS[0]);
+  const analytics = useAnalytics(period);
+  const venueLaborCost = analytics.data?.venueLaborCost ?? [];
+  const weeklyHours = analytics.data?.weeklyHours ?? [];
+  const peakHours = analytics.data?.peakHours ?? [{ hour: '—', load: 0 }];
 
-  const totalCost = venueLaborCost.reduce((sum, v) => sum + v.amount, 0);
-  const maxVenue = Math.max(...venueLaborCost.map((v) => v.amount));
-  const maxHours = Math.max(...weeklyHours.map((d) => d.hours));
+  const totalCost = analytics.data?.laborCost ?? 0;
+  const totalHours = analytics.data?.totalHours ?? 0;
+  const avgRate = totalHours ? Math.round(totalCost / totalHours) : 0;
+  const maxVenue = Math.max(1, ...venueLaborCost.map((v) => v.amount));
+  const maxHours = Math.max(1, ...weeklyHours.map((d) => d.hours));
   const peak = peakHours.reduce((a, b) => (b.load > a.load ? b : a));
   const utilization = Math.round((totalCost / MONTHLY_BUDGET) * 100);
 
@@ -56,7 +64,12 @@ export default function OwnerAnalyticsPage() {
                 ariaLabel="Період звіту"
               />
             </div>
-            <button type="button" className={page.secondaryBtn} onClick={() => exportCsv(period)}>
+            <button
+              type="button"
+              className={page.secondaryBtn}
+              disabled={!analytics.data}
+              onClick={() => analytics.data && exportCsv(period, analytics.data)}
+            >
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path
                   strokeLinecap="round"
@@ -72,6 +85,12 @@ export default function OwnerAnalyticsPage() {
 
       <div className={page.content}>
         <div className={page.inner}>
+          <QueryState
+            isLoading={analytics.isLoading}
+            error={analytics.error}
+            onRetry={analytics.refetch}
+          />
+
           <div className={page.grid3}>
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Загальні витрати на персонал</span>
@@ -80,8 +99,10 @@ export default function OwnerAnalyticsPage() {
             </div>
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Середня ставка в мережі</span>
-              <span className={page.kpiValue}>98 ₴/год</span>
-              <span className={page.kpiHint}>+4% до попереднього періоду</span>
+              <span className={page.kpiValue}>{avgRate} ₴/год</span>
+              <span className={page.kpiHint}>
+                {analytics.data?.shiftCount ?? 0} змін • {totalHours} год
+              </span>
             </div>
             <div className={page.kpiCard}>
               <span className={page.kpiLabel}>Пікова година навантаження</span>
@@ -157,9 +178,7 @@ export default function OwnerAnalyticsPage() {
                 <h3 className={page.cardTitle}>Щільність годин по днях тижня</h3>
                 <p className={page.cardSubtitle}>Сумарні години всіх працівників</p>
               </div>
-              <span className={`${page.badge} ${page.badgeInfo}`}>
-                {weeklyHours.reduce((s, d) => s + d.hours, 0)} год за тиждень
-              </span>
+              <span className={`${page.badge} ${page.badgeInfo}`}>{totalHours} год за період</span>
             </div>
             <div className={styles.vBars} role="img" aria-label="Графік годин по днях тижня">
               {weeklyHours.map((d) => (

@@ -11,7 +11,6 @@ export default function NotificationsPopover({
   className = '',
 }: NotificationsPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  // Mock unread counter: 3 items below; cleared by "Прочитати всі".
   const [unreadCount, setUnreadCount] = useState(hasUnread ? 3 : 0);
   const containerRef = useRef<HTMLDivElement>(null);
 
