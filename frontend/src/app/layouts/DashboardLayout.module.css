@@ -1,0 +1,18 @@
+.appContainer {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--color-bg-app);
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  color: var(--color-text-main);
+}
+
+.mainArea {
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: 4rem;
+}
