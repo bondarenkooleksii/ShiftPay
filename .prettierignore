@@ -1,5 +1,6 @@
-dist
-node_modules
-cypress/screenshots
-cypress/videos
-public/mockServiceWorker.js
+**/dist
+**/node_modules
+frontend/cypress/screenshots
+frontend/cypress/videos
+frontend/public/mockServiceWorker.js
+backend/data

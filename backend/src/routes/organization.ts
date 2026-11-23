@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { calcHours } from '@/shared/lib/payroll';
-import type { ShiftTemplate, TeamMember, Venue } from '@/types';
+import { calcHours } from '../lib/payroll';
+import type { ShiftTemplate, TeamMember, Venue } from '../types';
 import { currentUser, requireAuth } from '../auth';
 import { db } from '../db';
 import { fail } from '../http';

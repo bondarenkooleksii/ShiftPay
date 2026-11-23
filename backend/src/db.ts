@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import bcrypt from 'bcryptjs';
-import { seedAccounts } from '@/mocks/users';
-import { seedTeam } from '@/mocks/team';
-import { seedVenues } from '@/mocks/venues';
-import { seedShifts, seedTemplates } from '@/mocks/shifts';
-import { seedPayslips } from '@/mocks/payslips';
-import { seedDutyWorkers } from '@/mocks/workers';
-import { seedAdminSettings, seedOwnerSettings, seedProfiles } from '@/mocks/settings';
+import { seedAccounts } from './seed/users';
+import { seedTeam } from './seed/team';
+import { seedVenues } from './seed/venues';
+import { seedShifts, seedTemplates } from './seed/shifts';
+import { seedPayslips } from './seed/payslips';
+import { seedDutyWorkers } from './seed/workers';
+import { seedAdminSettings, seedOwnerSettings, seedProfiles } from './seed/settings';
 import type {
   AdminSettings,
   AuthUser,
@@ -19,7 +19,7 @@ import type {
   ShiftTemplate,
   TeamMember,
   Venue,
-} from '@/types';
+} from './types';
 import { config } from './config';
 
 export interface Account extends AuthUser {

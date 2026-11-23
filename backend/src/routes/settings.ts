@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { AdminSettings, EmployeeProfile, OwnerSettings } from '@/types';
+import type { AdminSettings, EmployeeProfile, OwnerSettings } from '../types';
 import { currentUser, requireAuth } from '../auth';
 import { db } from '../db';
 import { fail } from '../http';

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { AuthUser, UserRole } from '@/types';
+import type { AuthUser, UserRole } from './types';
 import { config } from './config';
 import { db, type Account } from './db';
 import { HttpError } from './http';

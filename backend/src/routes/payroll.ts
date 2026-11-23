@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { peakHours } from '@/mocks/analytics';
-import { buildPayslip, isPayable, shiftAmount, sumHours, todayIso } from '@/shared/lib/payroll';
-import type { PayoutRequest, Shift } from '@/types';
+import { peakHours } from '../seed/analytics';
+import { buildPayslip, isPayable, shiftAmount, sumHours, todayIso } from '../lib/payroll';
+import type { PayoutRequest, Shift } from '../types';
 import { currentUser, requireAuth } from '../auth';
 import { db } from '../db';
 import { fail } from '../http';

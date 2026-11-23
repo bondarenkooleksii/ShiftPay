@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { calcHours, canTransition, todayIso, validateShift } from '@/shared/lib/payroll';
-import type { AuthUser, DutyUpdate, NewShift, Shift, ShiftUpdate, TeamMember } from '@/types';
+import { calcHours, canTransition, todayIso, validateShift } from '../lib/payroll';
+import type { AuthUser, DutyUpdate, NewShift, Shift, ShiftUpdate, TeamMember } from '../types';
 import { currentUser, requireAuth } from '../auth';
 import { db } from '../db';
 import { fail } from '../http';

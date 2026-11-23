@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import type { LoginRequest, PasswordChange, UserRole } from '@/types';
+import type { LoginRequest, PasswordChange, UserRole } from '../types';
 import { currentUser, issueToken, requireAuth, revokeToken, toPublicUser } from '../auth';
 import { db } from '../db';
 import { fail } from '../http';

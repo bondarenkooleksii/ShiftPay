@@ -1,6 +1,19 @@
-# ShiftPay — Frontend Architecture
+# ShiftPay — Architecture
 
-## Folder map
+## Repository layout
+
+```
+frontend/   React + Vite client (its own package.json, node_modules, .env)
+backend/    Node.js + Express REST API (its own package.json, node_modules, .env)
+reports/    Lab reports
+```
+
+The two parts share no code and are installed and run separately. The frontend talks to the
+backend only over HTTP (`VITE_API_URL`).
+
+## Frontend folder map
+
+All paths below are inside `frontend/`.
 
 ```
 src/
@@ -78,7 +91,7 @@ src/
 Page → useShifts() / useCreateShift()   (api/shifts.ts)
      → useApiQuery / useApiMutation     (shared/hooks)
      → apiClient.get / post             (shared/api/client.ts, fetch + token)
-     → /api/shifts                      (MSW handlers now, Express in lab 7)
+     → /api/shifts                      (Express backend, or MSW handlers without VITE_API_URL)
 ```
 
 After a mutation, `useApiMutation` calls `queryCache.invalidate('shifts', ...)`, and every page that
@@ -98,8 +111,10 @@ To reset the mock (MSW) data, clear the `shiftpay.mockdb.v1` key in localStorage
 ## Backend (lab 7)
 
 ```
-server/
-├── tsconfig.json             Extends the root config, reuses src/types, src/mocks seed data, shared/lib/payroll.ts
+backend/
+├── package.json              express, cors, jsonwebtoken, bcryptjs; scripts dev / start / typecheck
+├── tsconfig.json
+├── .env.example              PORT, JWT_SECRET, CORS_ORIGIN
 ├── data/db.json              JSON database file, created from the seed on first start (git-ignored)
 └── src/
     ├── index.ts              Starts the server (PORT, default 4000)
@@ -108,21 +123,31 @@ server/
     ├── db.ts                 Loads/saves db.json, seeds accounts with bcrypt password hashes
     ├── auth.ts               JWT issue/revoke, requireAuth(roles) middleware, toPublicUser
     ├── http.ts               HttpError + fail() helper
+    ├── types/                Data shapes (Shift, Payslip, TeamMember, AuthUser...)
+    ├── seed/                 Initial data, one file per topic (users, team, shifts, payslips...)
+    ├── lib/payroll.ts        Business rules: calcHours, validateShift, canTransition, buildPayslip...
     └── routes/               auth, shifts (+ duty), payroll (payouts, payslips, analytics),
                               organization (team, venues, templates), settings (+ profile, support)
 ```
 
 Run it:
 
-1. `npm run server` (API at `http://localhost:4000/api`, restarts on file changes).
-2. Create `.env` with `VITE_API_URL=http://localhost:4000/api` (see `.env.example`).
-3. `npm run dev`. With `VITE_API_URL` set, `main.tsx` skips MSW and every request goes to Express.
+1. `cd backend`, `npm install`, copy `.env.example` to `.env`.
+2. `npm run dev` (API at `http://localhost:4000/api`, restarts on file changes).
+3. In `frontend/.env` set `VITE_API_URL=http://localhost:4000/api`, then `npm run dev` in `frontend/`.
+   With `VITE_API_URL` set, `main.tsx` skips MSW and every request goes to Express.
    Leave `VITE_API_URL` empty to go back to the in-browser mock API.
 
 Login returns a JWT (7 days) whose `jti` is stored in `sessions`; logout and password change revoke it.
-To reset the server data, delete `server/data/db.json` or send `POST /api/dev/reset`.
+To reset the server data, delete `backend/data/db.json` or send `POST /api/dev/reset`.
+
+The backend keeps its own copy of the types and business rules. When a data shape or rule
+changes, update both `frontend/src/types` (or `shared/lib/payroll.ts`) and `backend/src/types`
+(or `lib/payroll.ts`).
 
 ## Where do I find…
+
+Frontend paths are relative to `frontend/src/`.
 
 | I want to change…                     | Open                                                |
 | ------------------------------------- | --------------------------------------------------- |
@@ -132,7 +157,7 @@ To reset the server data, delete `server/data/db.json` or send `POST /api/dev/re
 | How a page loads or saves data        | `api/<topic>.ts`                                    |
 | A business rule (hours, statuses)     | `shared/lib/payroll.ts`                             |
 | What the fake server answers          | `mocks/server/handlers.ts`                          |
-| What the Express server answers       | `server/src/routes/<topic>.ts`                      |
+| What the Express server answers       | `backend/src/routes/<topic>.ts`                     |
 | A sidebar item (text, icon, order)    | `app/navigation.ts`                                 |
 | A URL                                 | `app/paths.ts`                                      |
 | Which page opens on which URL         | `app/routes.tsx`                                    |
@@ -148,12 +173,12 @@ To reset the server data, delete `server/data/db.json` or send `POST /api/dev/re
 1. Add the URL to `app/paths.ts`.
 2. Create `features/<role>/<Name>Page/<Name>Page.tsx` (+ `<Name>Page.module.css` if needed).
    Start from `PageHeader` + `page.module.css` classes, like the other pages.
-3. If it needs data, add the endpoint to `mocks/server/handlers.ts` and `server/src/routes/<topic>.ts`,
+3. If it needs data, add the endpoint to `mocks/server/handlers.ts` and `backend/src/routes/<topic>.ts`,
    and a hook to `api/<topic>.ts`.
    Show loading and errors with `QueryState`.
 4. Register it in `app/routes.tsx`.
 5. If it needs a sidebar item, add it to `NAV_ITEMS` in `app/navigation.ts`.
-6. Add the route to `cypress/e2e/routes.cy.ts`.
+6. Add the route to `frontend/cypress/e2e/routes.cy.ts`.
 
 ## Rules
 

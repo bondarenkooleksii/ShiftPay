@@ -4,38 +4,51 @@ ShiftPay — сучасний веб-додаток для обліку робо
 
 ## 🚀 Запуск проєкту локально
 
-1. **Встановлення залежностей** (якщо ще не встановлені):
+Проєкт складається з двох незалежних частин:
+
+- `frontend/` — веб-клієнт (React + Vite)
+- `backend/` — REST API (Node.js + Express)
+
+1. **Встановлення залежностей** (корінь, фронтенд і бекенд):
 
    ```bash
-   npm install
+   npm run install:all
    ```
 
-2. **Запуск сервера розробки**:
+2. **Налаштування змінних середовища**:
 
    ```bash
-   npm run dev
+   cp frontend/.env.example frontend/.env
+   cp backend/.env.example backend/.env
    ```
-
-   Додаток буде доступний за адресою [http://localhost:5173/](http://localhost:5173/).
 
 3. **Запуск бекенду (Express API)**:
 
    ```bash
-   npm run server
+   cd backend
+   npm run dev
    ```
 
-   API буде доступне за адресою `http://localhost:4000/api`. Щоб фронтенд звертався до нього, створіть файл `.env` за зразком `.env.example` (`VITE_API_URL=http://localhost:4000/api`). Без `VITE_API_URL` працює вбудований мок-сервер MSW.
+   API буде доступне за адресою `http://localhost:4000/api`.
 
-4. **Збірка для продакшну**:
+4. **Запуск фронтенду**:
 
    ```bash
+   cd frontend
+   npm run dev
+   ```
+
+   Додаток буде доступний за адресою [http://localhost:5173/](http://localhost:5173/). Якщо у `frontend/.env` не вказано `VITE_API_URL`, працює вбудований мок-сервер MSW.
+
+5. **Збірка фронтенду для продакшну**:
+
+   ```bash
+   cd frontend
    npm run build
-   ```
-
-5. **Попередній перегляд збірки**:
-   ```bash
    npm run preview
    ```
+
+З кореня проєкту ці ж команди можна запускати як `npm run backend` і `npm run frontend`.
 
 ---
 
