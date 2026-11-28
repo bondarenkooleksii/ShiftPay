@@ -29,3 +29,8 @@ dist-ssr
 
 backend/data
 .env
+
+coverage
+.nyc_output
+frontend/cypress/screenshots
+frontend/cypress/videos

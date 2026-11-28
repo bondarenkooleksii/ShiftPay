@@ -179,6 +179,20 @@ Frontend paths are relative to `frontend/src/`.
 4. Register it in `app/routes.tsx`.
 5. If it needs a sidebar item, add it to `NAV_ITEMS` in `app/navigation.ts`.
 6. Add the route to `frontend/cypress/e2e/routes.cy.ts`.
+7. Add a component test to `frontend/cypress/component/features/<role>/<Name>Page.cy.tsx`.
+
+## Component tests
+
+- Run with `npm run test:component` in `frontend/` (Cypress component testing, headless).
+- `cypress/support/component.tsx` replaces `window.fetch` for `/api/*` with the MSW handlers from
+  `src/mocks/server/handlers.ts` (no service worker), resets the mock db before every test and waits
+  for unfinished requests after it.
+- `cypress/support/mount.tsx`: `mountWithApp(ui, { role, path })` mounts with router, auth and app
+  state providers and logs in as the given role; `expectCall`, `failApi`, `location`, `appState` help
+  to assert requests, simulate server errors and check navigation.
+- Coverage: `cypress/coverage.ts` instruments `src/**/*.ts(x)` (except `mocks`, `types`, `main.tsx`)
+  with istanbul before the JSX transform; `@cypress/code-coverage` collects it and `nyc` writes
+  `coverage/` (HTML in `coverage/index.html`).
 
 ## Rules
 

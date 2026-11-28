@@ -48,6 +48,16 @@ ShiftPay — сучасний веб-додаток для обліку робо
    npm run preview
    ```
 
+6. **Компонентні тести з покриттям коду (Cypress)**:
+
+   ```bash
+   cd frontend
+   npm run test:component
+   ```
+
+   Тести лежать у `frontend/cypress/component/`, звіт покриття — у `frontend/coverage/index.html`.
+   Інтерактивний режим: `npm run test:component:open`, повна таблиця покриття: `npm run coverage:table`.
+
 З кореня проєкту ці ж команди можна запускати як `npm run backend` і `npm run frontend`.
 
 ---
