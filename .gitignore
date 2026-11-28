@@ -26,3 +26,11 @@ dist-ssr
 
 # Figma agent artifacts
 .figma
+
+backend/data
+.env
+
+coverage
+.nyc_output
+frontend/cypress/screenshots
+frontend/cypress/videos

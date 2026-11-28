@@ -4,30 +4,61 @@ ShiftPay — сучасний веб-додаток для обліку робо
 
 ## 🚀 Запуск проєкту локально
 
-1. **Встановлення залежностей** (якщо ще не встановлені):
+Проєкт складається з двох незалежних частин:
+
+- `frontend/` — веб-клієнт (React + Vite)
+- `backend/` — REST API (Node.js + Express)
+
+1. **Встановлення залежностей** (корінь, фронтенд і бекенд):
 
    ```bash
-   npm install
+   npm run install:all
    ```
 
-2. **Запуск сервера розробки**:
+2. **Налаштування змінних середовища**:
 
    ```bash
+   cp frontend/.env.example frontend/.env
+   cp backend/.env.example backend/.env
+   ```
+
+3. **Запуск бекенду (Express API)**:
+
+   ```bash
+   cd backend
    npm run dev
    ```
 
-   Додаток буде доступний за адресою [http://localhost:5173/](http://localhost:5173/).
+   API буде доступне за адресою `http://localhost:4000/api`.
 
-3. **Збірка для продакшну**:
+4. **Запуск фронтенду**:
 
    ```bash
-   npm run build
+   cd frontend
+   npm run dev
    ```
 
-4. **Попередній перегляд збірки**:
+   Додаток буде доступний за адресою [http://localhost:5173/](http://localhost:5173/). Якщо у `frontend/.env` не вказано `VITE_API_URL`, працює вбудований мок-сервер MSW.
+
+5. **Збірка фронтенду для продакшну**:
+
    ```bash
+   cd frontend
+   npm run build
    npm run preview
    ```
+
+6. **Компонентні тести з покриттям коду (Cypress)**:
+
+   ```bash
+   cd frontend
+   npm run test:component
+   ```
+
+   Тести лежать у `frontend/cypress/component/`, звіт покриття — у `frontend/coverage/index.html`.
+   Інтерактивний режим: `npm run test:component:open`, повна таблиця покриття: `npm run coverage:table`.
+
+З кореня проєкту ці ж команди можна запускати як `npm run backend` і `npm run frontend`.
 
 ---
 
@@ -53,6 +84,7 @@ ShiftPay — сучасний веб-додаток для обліку робо
 - **Vite 8**
 - **Tailwind CSS v4** (`@tailwindcss/vite`)
 - **TypeScript**
+- **Node.js + Express 5** (REST API, JWT-авторизація, bcrypt)
 
 ## 📱 Ролі та функціонал
 
